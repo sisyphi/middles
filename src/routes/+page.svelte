@@ -1,5 +1,5 @@
 <script lang="ts">
-	// import dictTxt from '$lib/data/dictionary.txt?raw';
+	import dictTxt from '$lib/data/dictionary.txt?raw';
 	// import lettersTxt from '$lib/data/letters.txt?raw';
 
 	// const dict = dictTxt.split('\n');
@@ -18,6 +18,16 @@
 	// }
 
 	// console.log(JSON.stringify(letterPairData));
+	import Logo from '$lib/Logo.svg';
+	let bgPosition: number = $state(0);
+	const xDir = Math.random() > 0.5 ? 1 : -1;
+	const yDir = Math.random() > 0.5 ? 1 : -1;
+
+	setInterval(() => {
+		bgPosition = Math.round(((bgPosition + 0.05) % 200) * 200) / 200;
+	}, 0.1);
+
+	import { onMount } from 'svelte';
 
 	import letterPairData from '$lib/data/letterPairData.json';
 
@@ -27,7 +37,6 @@
 	let randIdx = $state(Math.floor(Math.random() * availableLetterPairsData.length));
 	let chosenLetterPairData = $derived.by(() => {
 		let chosenLetterPairData = availableLetterPairsData[randIdx];
-		console.log(chosenLetterPairData.words);
 		return chosenLetterPairData;
 	});
 
@@ -37,7 +46,7 @@
 	const handleReroll = () => {
 		middleLetters = '';
 		randIdx = Math.floor(Math.random() * availableLetterPairsData.length);
-		if (middleLettersInputRef) middleLettersInputRef.focus();
+		middleLettersInputRef?.focus();
 	};
 
 	const handleSubmit = (e: SubmitEvent) => {
@@ -79,39 +88,78 @@
 		return `${minutesText}:${extraSecondsText}`;
 	};
 
-	const handleResetGame = () => {
+	const handleResetGame = (e: SubmitEvent) => {
+		e.preventDefault();
 		isGameWon = false;
 	};
+
+	onMount(() => {
+		middleLettersInputRef?.focus();
+	});
 </script>
 
-{#if !isGameWon}
-	<form onsubmit={handleSubmit} class="mx-auto flex w-4xl flex-col items-center justify-center">
-		<div class="flex flex-row justify-center">
-			<div>{chosenLetterPairData.firstLetter}</div>
-			<input
-				bind:this={middleLettersInputRef}
-				bind:value={middleLetters}
-				type="text"
-				class={'text-center uppercase'}
-			/>
-			<div>{chosenLetterPairData.lastLetter}</div>
-		</div>
-		<div class="text-center">
-			{chosenLetterPairData!.firstLetter +
-				middleLetters.toUpperCase() +
-				chosenLetterPairData!.lastLetter}
-		</div>
-		<button type="submit" class="hover:cursor-pointer">submit</button>
-		<button type="reset" class="hover:cursor-pointer" onclick={handleReroll}> reroll </button>
-		<div class="text-center">{convertSecondsToMinute(seconds)}</div>
-		<div class="text-center">{score}</div>
-		<!-- <div class="text-center">{chosenLetterPairData.count}</div> -->
-		<!-- <div class="w-full text-center text-wrap break-words">{chosenLetterPairData.words}</div> -->
-	</form>
-{:else}
-	<div class="mx-auto flex w-4xl flex-col items-center justify-center">
-		<div class="text-center">Yay you won with a time of {convertSecondsToMinute(seconds)}!</div>
-		<button type="reset" onclick={handleResetGame} class="hover: cursor-pointer">play again?</button
+<div
+	class="bg-polka flex h-svh flex-col justify-between"
+	style="background-position: {`${bgPosition * xDir}px ${bgPosition * yDir}px`};"
+>
+	<div class="h-16 w-full border-b-8 border-[#10141f] bg-[#ebede9]"></div>
+	{#if !isGameWon}
+		<form
+			onsubmit={handleSubmit}
+			class="mx-auto flex w-md flex-1 flex-col items-center justify-center gap-2 border-r-8 border-l-8 border-[#10141f] bg-[#ebede9] font-sans text-2xl font-bold text-[#10141f]"
 		>
+			<div class="flex flex-col justify-center">
+				<div class="text-center font-sans font-bold">
+					{convertSecondsToMinute(seconds)}
+				</div>
+			</div>
+			<div class="flex flex-col justify-center">
+				<div class="text-center">{`${score}/${GAME_WINNING_SCORE}`}</div>
+			</div>
+
+			<div class="flex flex-row justify-center align-middle font-mono text-4xl">
+				<div>{chosenLetterPairData.firstLetter}</div>
+				<input
+					style={`width: ${Math.max(1, middleLetters.length)}ch;`}
+					bind:this={middleLettersInputRef}
+					bind:value={middleLetters}
+					type="text"
+					class="text-center uppercase outline-0"
+				/>
+				<div>{chosenLetterPairData.lastLetter}</div>
+			</div>
+
+			<button type="submit" class="flex flex-col justify-center hover:cursor-pointer">submit</button
+			>
+			<button
+				type="reset"
+				class="flex flex-col justify-center hover:cursor-pointer"
+				onclick={handleReroll}
+			>
+				reroll
+			</button>
+		</form>
+	{:else}
+		<form
+			onsubmit={handleResetGame}
+			class="mx-auto flex h-svh flex-col items-center justify-center gap-4 pb-32 text-2xl"
+		>
+			<div class="text-center">Yay you won with a time of {convertSecondsToMinute(seconds)}!</div>
+			<!-- display words & responding score per word -->
+			<!-- display computation based on word score and time -->
+			<button type="submit" class="hover: cursor-pointer">play again?</button>
+		</form>
+	{/if}
+	<div class="absolute right-10 bottom-10 size-16 bg-[#ea5e82]">
+		<img alt="My logo" src={Logo} />
 	</div>
-{/if}
+</div>
+
+<style>
+	.bg-polka {
+		opacity: 1;
+		background-image:
+			radial-gradient(#ebede9 4px, transparent 4px), radial-gradient(#ebede9 4px, #e8c170 4px);
+		background-size: 50px 50px;
+	}
+</style>
