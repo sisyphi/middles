@@ -1,5 +1,7 @@
 <script lang="ts">
-	import dictTxt from '$lib/data/dictionary.txt?raw';
+	import ChevronDown from '$lib/icons/ChevronDown.svelte';
+	import ChevronUp from '$lib/icons/ChevronUp.svelte';
+	// import dictTxt from '$lib/data/dictionary.txt?raw';
 	// import lettersTxt from '$lib/data/letters.txt?raw';
 
 	// const dict = dictTxt.split('\n');
@@ -18,7 +20,7 @@
 	// }
 
 	// console.log(JSON.stringify(letterPairData));
-	import Logo from '$lib/Logo.svg';
+	import Logo from '$lib/icons/Logo.svg';
 	let bgPosition: number = $state(0);
 	const xDir = Math.random() > 0.5 ? 1 : -1;
 	const yDir = Math.random() > 0.5 ? 1 : -1;
@@ -28,6 +30,7 @@
 	}, 0.1);
 
 	import letterPairData from '$lib/data/letterPairData.json';
+	import { format } from 'date-fns-tz';
 
 	const MINIMUM_WORD_COUNT = 100;
 	const availableLetterPairsData = letterPairData.filter((lpd) => lpd.count >= MINIMUM_WORD_COUNT);
@@ -44,6 +47,7 @@
 	const handleReroll = () => {
 		middleLetters = '';
 		randIdx = Math.floor(Math.random() * availableLetterPairsData.length);
+		rerollCount--;
 		focusMiddleLettersInput();
 	};
 
@@ -60,7 +64,6 @@
 			score += 1;
 			handleReroll();
 			answers.push({ word: guess, timestamp: MAX_SECONDS - seconds });
-			console.log({ word: guess, timestamp: MAX_SECONDS - seconds });
 		} else {
 			middleLetters = '';
 		}
@@ -69,14 +72,14 @@
 	};
 
 	const MAX_SECONDS = 90;
-	let seconds = $state(0);
+	let seconds = $state(MAX_SECONDS);
 	let isGameWon = $state(false);
 	let isGameLost = $state(false);
-	const GAME_WINNING_SCORE = 0;
+	const GAME_WINNING_SCORE = 5;
 
 	setInterval(() => {
-		if (!isGameWon && !isGameLost) seconds -= 1;
-	}, 1000);
+		if (!isGameWon && !isGameLost) seconds -= 0.1;
+	}, 100);
 
 	$effect(() => {
 		if (score == GAME_WINNING_SCORE) isGameWon = true;
@@ -100,6 +103,9 @@
 		score = 0;
 		seconds = MAX_SECONDS;
 		answers = [];
+		isTimeScoreBreakdownOpen = false;
+		isWordScoreBreakdownOpen = false;
+		rerollCount = MAX_REROLL_COUNT;
 	};
 
 	$effect(() => {
@@ -113,16 +119,16 @@
 	let answers: { word: string; timestamp: number }[] = $state([]);
 
 	answers = [
-		{ word: '12345', timestamp: 10 },
-		{ word: '1234567890', timestamp: 20 },
-		{ word: '1234567890', timestamp: 30 },
-		{ word: '1234567890', timestamp: 40 },
-		{ word: '1234567890', timestamp: 50 }
+		{ word: 'ERROR', timestamp: 5 },
+		{ word: 'GOVERNMENT', timestamp: 20 },
+		{ word: 'VOLITION', timestamp: 26 },
+		{ word: 'ASSIGNMENT', timestamp: 38 },
+		{ word: 'COLONY', timestamp: 42 }
 	];
 
 	const WORD_MILESTONES = [20, 30, 40, 50];
 	// const TIME_MILESTONES = [90, 100, 110, 120];
-	const TIME_MILESTONES = [30, 60, 75, 90];
+	const TIME_MILESTONES = [30, 40, 50, 60];
 
 	const getTotalLetterCount = (words: string[]): number => {
 		return words.map((a) => a.length).reduce((acc, curr) => acc + curr, 0);
@@ -142,6 +148,29 @@
 		getMilestoneIdx(WORD_MILESTONES, getTotalLetterCount(answers.map((a) => a.word)))
 	);
 	let timeMilestoneIdx = $derived(getMilestoneIdx(TIME_MILESTONES, seconds));
+
+	let isWordScoreBreakdownOpen = $state(false);
+	let isTimeScoreBreakdownOpen = $state(false);
+
+	const MAX_REROLL_COUNT = 1;
+	let rerollCount = $state(MAX_REROLL_COUNT);
+
+	const createShareText = (): string => {
+		const createScoreEmojis = () => {
+			if (wordMilestoneIdx == 4 && timeMilestoneIdx == 4) {
+				return '🟪🟪🟪🟪🟪🟪';
+			}
+
+			const wordScoreEmojis = '🟥'.repeat(Math.min(wordMilestoneIdx, 3));
+			const timeScoreEmojis = '🟦'.repeat(Math.min(timeMilestoneIdx, 3));
+			const noneScoreEmojis = '⬜'.repeat(
+				6 - (Math.min(wordMilestoneIdx, 3) + Math.min(timeMilestoneIdx, 3))
+			);
+
+			return `${wordScoreEmojis}${timeScoreEmojis}${noneScoreEmojis}`;
+		};
+		return `Middles | ${format(new Date(), 'MMM d, yyyy')}\n${createScoreEmojis()}\nWord Score: ${wordMilestoneIdx}/3 | ${answers.map((a) => a.word.length).reduce((acc, curr) => acc + curr, 0)}\nTime Score: ${timeMilestoneIdx}/3 | ${convertSecondsToMinute(MAX_SECONDS - seconds)}`;
+	};
 </script>
 
 <div class="bg-polka flex h-svh flex-col justify-between">
@@ -161,7 +190,7 @@
 					{`${score}/${GAME_WINNING_SCORE}`}
 				</div>
 				<div
-					class="w-1/2 border-t-4 border-b-4 border-l-2 border-[#10141f] bg-[#4f8fba] p-2 text-center font-mono font-bold text-[#ebede9]"
+					class={`w-1/2 border-t-4 border-b-4 border-l-2 border-[#10141f] bg-[#4f8fba] p-2 text-center font-mono font-bold ${seconds > 11 ? 'text-[#ebede9]' : seconds - Math.floor(seconds) < 0.5 ? 'text-[#10141f]' : 'text-[#ebede9]'}`}
 				>
 					{convertSecondsToMinute(seconds)}
 				</div>
@@ -187,11 +216,11 @@
 					submit
 				</button>
 				<button
-					type="reset"
-					class="w-1/2 border-t-4 border-b-4 border-l-2 border-[#10141f] p-2 hover:cursor-pointer hover:bg-[#10141f] hover:text-[#ebede9]"
+					disabled={rerollCount == 0}
+					class={`w-1/2 border-t-4 border-b-4 border-l-2 border-[#10141f] p-2 ${rerollCount > 0 ? 'hover:cursor-pointer hover:bg-[#10141f] hover:text-[#ebede9]' : 'bg-[#577277] text-[#ebede9] hover:cursor-not-allowed'}`}
 					onclick={handleReroll}
 				>
-					reroll
+					{rerollCount > 0 ? 'reroll' : 'goodluck!'}
 				</button>
 			</div>
 		</form>
@@ -201,13 +230,7 @@
 			class="mx-auto mt-32 flex w-full max-w-lg flex-1 flex-col border-r-4 border-l-4 border-[#10141f] bg-[#ebede9] font-sans text-2xl font-bold text-[#10141f]"
 		>
 			<div
-				class="flex w-full flex-row justify-evenly border-t-4 border-b-4 border-[#10141f] px-8 py-4 text-center"
-			>
-				<span class="text-[#cf573c]">{MILESTONE_TITLES[wordMilestoneIdx]}</span>
-				<span class="text-[#4f8fba]">{MILESTONE_TITLES[timeMilestoneIdx]}</span>
-			</div>
-			<div
-				class="flex h-fit w-full flex-row justify-between border-b-4 border-[#10141f] px-8 py-4 text-center"
+				class="flex h-fit w-full flex-row justify-between border-t-4 border-b-4 border-[#10141f] px-8 py-4 text-center"
 			>
 				{#each { length: WORD_MILESTONES.length - 1 + TIME_MILESTONES.length - 1 }, idx}
 					<div class="aspect-square w-1/8 border-4">
@@ -225,70 +248,151 @@
 			</div>
 			<div class="flex flex-row">
 				<div class="flex w-full flex-col px-8 py-4 text-lg">
-					{#each answers as answer, idx}
-						<div
-							class={`flex w-full flex-row justify-between ${
-								idx == answers.length - 1 ? ' border-b-4 border-[#10141f] pb-2' : ''
-							}`}
-						>
-							<div>{answer.word}</div>
-							<div class="font-mono text-[#cf573c]">
-								+{String(answer.word.length.toString()).padStart(2, '0')}
-							</div>
-						</div>
-					{/each}
-
-					<div class="flex flex-row justify-between pt-2 text-2xl text-[#cf573c]">
+					<button
+						disabled={answers.length == 0}
+						onclick={(e) => {
+							e.preventDefault();
+							isWordScoreBreakdownOpen = !isWordScoreBreakdownOpen;
+						}}
+						class={`flex flex-row justify-between text-2xl ${answers.length > 0 ? 'hover:cursor-pointer' : ''}`}
+					>
 						<div>WORD SCORE</div>
-						<div class="font-mono">
-							{answers
-								.map((a) => a.word.length)
-								.reduce((acc, curr) => acc + curr, 0)
-								.toString()}
+						<div class="flex flex-row items-center gap-2">
+							<div class="font-mono text-[#cf573c]">
+								{`(${MILESTONE_TITLES[wordMilestoneIdx]}) ${wordMilestoneIdx}/${MILESTONE_TITLES.length - 2}`}
+							</div>
+							{#if answers.length > 0}
+								{#if !isWordScoreBreakdownOpen}
+									<ChevronDown class="size-8" />
+								{:else}
+									<ChevronUp class="size-8" />
+								{/if}
+							{/if}
 						</div>
-					</div>
+					</button>
+
+					{#if isWordScoreBreakdownOpen}
+						{#each answers as answer, idx}
+							<div
+								class={`flex w-full flex-row justify-between ${
+									idx == answers.length - 1 ? 'mb-2 border-b-4 border-[#10141f] pb-2' : ''
+								} ${idx == 0 ? 'mt-4' : ''}`}
+							>
+								<div>{answer.word}</div>
+								<div class="font-mono text-[#cf573c]">
+									+{String(answer.word.length.toString()).padStart(2, '0')}
+								</div>
+							</div>
+						{/each}
+						{#if answers.length > 0}
+							<div class="flex flex-row justify-between text-2xl">
+								<div>TOTAL</div>
+								<div class="font-mono text-[#cf573c]">
+									{answers
+										.map((a) => a.word.length)
+										.reduce((acc, curr) => acc + curr, 0)
+										.toString()}
+								</div>
+							</div>
+						{/if}
+					{/if}
 				</div>
 			</div>
 
 			<div class="flex w-full flex-col border-t-4 border-[#10141f] px-8 py-4">
-				<div class="grid overflow-clip border-4 border-[#10141f] text-[#ebede9]">
-					<div
-						class={`col-start-1 row-start-1 h-8 border-r-4 border-[#cf573c] bg-[#4f8fba]`}
-						style={`width: ${((MAX_SECONDS - seconds) / MAX_SECONDS) * 100 + 0.5}%`}
-					></div>
-
-					{#each answers as answer}
-						<div
-							class="col-start-1 row-start-1 h-full border-r-4 border-[#cf573c]"
-							style={`width:  ${(answer.timestamp / MAX_SECONDS) * 100 + 0.5}%;`}
-						></div>
-					{/each}
-					{#each { length: MAX_SECONDS / 5 + 1 }, idx}
-						{#if idx != 0 && idx != MAX_SECONDS / 5}
-							<div
-								class={`col-start-1 row-start-1 -mt-0.5 border-r-4 border-[#10141f] ${idx % 2 == 0 ? 'h-4' : 'h-2'}`}
-								style={`width: ${(idx / (MAX_SECONDS / 5)) * 100 + 0.5}%`}
-							></div>
-						{/if}
-					{/each}
-				</div>
-				<div class="w-full">
-					<div class="flex w-full flex-row justify-between pt-2 text-[#4f8fba]">
+				<button
+					disabled={answers.length == 0}
+					class={`w-full ${answers.length > 0 ? 'hover:cursor-pointer' : ''}`}
+					onclick={(e) => {
+						e.preventDefault();
+						isTimeScoreBreakdownOpen = !isTimeScoreBreakdownOpen;
+					}}
+				>
+					<div class="flex w-full flex-row justify-between">
 						<div>TIME SCORE</div>
-						<div class="font-mono">{convertSecondsToMinute(seconds)}</div>
+						<div class="flex flex-row items-center gap-2">
+							<div class="font-mono text-[#4f8fba]">
+								{`(${MILESTONE_TITLES[timeMilestoneIdx]}) ${timeMilestoneIdx}/${MILESTONE_TITLES.length - 2}`}
+							</div>
+
+							{#if answers.length > 0}
+								{#if !isTimeScoreBreakdownOpen}
+									<ChevronDown class="size-8" />
+								{:else}
+									<ChevronUp class="size-8" />
+								{/if}
+							{/if}
+						</div>
 					</div>
-				</div>
+				</button>
+				{#if isTimeScoreBreakdownOpen}
+					<div class="flex flex-col justify-between text-lg">
+						{#each answers as answer, idx}
+							<div
+								class={`flex w-full flex-row justify-between ${
+									idx == answers.length - 1 ? 'mb-2 border-b-4 border-[#10141f] pb-2' : ''
+								} ${idx == 0 ? 'mt-4' : ''}`}
+							>
+								<div>{answer.word}</div>
+								<div class="font-mono text-[#4f8fba]">
+									+{convertSecondsToMinute(
+										answer.timestamp - (idx == 0 ? 0 : answers[idx - 1].timestamp)
+									)}
+								</div>
+							</div>
+						{/each}
+					</div>
+					{#if seconds == MAX_SECONDS}
+						<div class="flex flex-row justify-between text-2xl">
+							<div>FINISH TIME</div>
+							<div class="font-mono text-[#4f8fba]">
+								{convertSecondsToMinute(MAX_SECONDS - seconds)}
+							</div>
+						</div>
+						<div class="mt-4 grid overflow-clip border-4 border-[#10141f] text-[#ebede9]">
+							<div
+								class={`col-start-1 row-start-1 h-8 border-r-4 border-[#cf573c] bg-[#4f8fba]`}
+								style={`width: ${((MAX_SECONDS - seconds) / MAX_SECONDS) * 100 + 0.5}%`}
+							></div>
+
+							{#each answers as answer}
+								<div
+									class="col-start-1 row-start-1 h-full border-r-4 border-[#cf573c]"
+									style={`width:  ${(answer.timestamp / MAX_SECONDS) * 100 + 0.5}%;`}
+								></div>
+							{/each}
+							{#each { length: MAX_SECONDS / 5 + 1 }, idx}
+								{#if idx != 0 && idx != MAX_SECONDS / 5}
+									<div
+										class={`col-start-1 row-start-1 -mt-0.5 border-r-4 border-[#10141f] ${idx % 2 == 0 ? 'h-4' : 'h-2'}`}
+										style={`width: ${(idx / (MAX_SECONDS / 5)) * 100 + 0.5}%`}
+									></div>
+								{/if}
+							{/each}
+						</div>
+						<div class="text-xs text-[#10141f]">* each tick represents 5 seconds</div>
+					{/if}
+				{/if}
 			</div>
 
-			<button
-				type="submit"
-				class="w-full border-t-4 border-b-4 border-[#10141f] p-2 hover:cursor-pointer hover:bg-[#10141f] hover:text-[#ebede9]"
-				>play again?</button
-			>
+			<div class="flex w-full flex-row">
+				<button
+					class="w-1/2 border-t-4 border-r-2 border-b-4 border-[#10141f] p-2 hover:cursor-pointer hover:bg-[#10141f] hover:text-[#ebede9]"
+					onclick={(e) => {
+						e.preventDefault();
+						console.log(createShareText());
+					}}>share!</button
+				>
+				<button
+					type="submit"
+					class="w-1/2 border-t-4 border-b-4 border-l-2 border-[#10141f] p-2 hover:cursor-pointer hover:bg-[#10141f] hover:text-[#ebede9]"
+					>play again?</button
+				>
+			</div>
 		</form>
 	{/if}
 	<div class="absolute right-10 bottom-10 size-16 bg-[#ea5e82]">
-		<img alt="My logo" src={Logo} />
+		<img alt="Jordan Sibug's logo" src={Logo} />
 	</div>
 </div>
 
