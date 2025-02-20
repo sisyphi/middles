@@ -46,7 +46,7 @@
 		(lpd) => lpd.count >= MINIMUM_WORD_COUNT
 	);
 
-	let gameMode = $state($finishedDaily === 'true' ? 'random' : 'daily');
+	let gameMode = $state('random');
 
 	let randIdx = $state(Math.floor(Math.random() * availableLetterPairsData.length));
 	let dailyIdx = $state(0);
@@ -192,10 +192,42 @@
 </script>
 
 <div class="bg-polka flex h-svh flex-col justify-between">
-	<div
-		class="h-16 w-full border-b-4 border-[#10141f] bg-[#ebede9]"
-		style="background-position: {`${bgPosition * xDir}px ${bgPosition * yDir}px`};"
-	></div>
+	<!-- style="background-position: {`${bgPosition * xDir}px ${bgPosition * yDir}px`};" -->
+	<div class="h-16 w-full border-b-4 border-[#10141f] bg-[#ebede9]">
+		<div class="mx-auto flex h-full max-w-xl flex-row justify-between">
+			<div class="flex flex-row content-center items-center justify-center gap-4">
+				<button
+					onclick={() => {
+						gameMode = 'daily';
+					}}
+					class={`hover:cursor-pointer hover:text-[#cf573c] ${gameMode == 'daily' ? 'text-[#cf573c]' : ''}`}
+				>
+					<Icon icon="mdi:calendar-question" width="36" height="36" />
+				</button>
+
+				<button
+					onclick={() => {
+						gameMode = 'random';
+					}}
+					class={`hover:cursor-pointer hover:text-[#4f8fba] ${gameMode == 'random' ? 'text-[#4f8fba]' : ''}`}
+				>
+					<Icon icon="ri:dice-line" width="36" height="36" />
+				</button>
+			</div>
+			<div
+				class="flex flex-row content-center items-center justify-center font-mono text-4xl font-bold"
+			>
+				<span class="text-5xl text-[#cf573c]">M</span>IDDLE<span class="text-5xl text-[#4f8fba]"
+					>S</span
+				>
+			</div>
+			<div class="flex flex-row content-center items-center justify-center gap-4">
+				<button class="ml-[52px] hover:cursor-pointer hover:text-[#4f8fba]">
+					<Icon icon="ri:information-2-fill" width="36" height="36" />
+				</button>
+			</div>
+		</div>
+	</div>
 	{#if !isGameWon && !isGameLost}
 		<Game
 			{handleSubmit}
