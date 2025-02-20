@@ -1,10 +1,10 @@
+import { GAME_WINNING_SCORE, MINIMUM_WORD_COUNT } from '$lib/constants';
 import letterPairDataJson from '$lib/server/data/letterPairData.json';
 
 type LetterPairData = { firstLetter: string; lastLetter: string; count: number; words: string[] };
 
 const letterPairData = letterPairDataJson as LetterPairData[];
 
-const MINIMUM_WORD_COUNT = 100;
 const availableLetterPairData = letterPairData.filter((lpd) => lpd.count >= MINIMUM_WORD_COUNT);
 
 const generateLetterPairSequence = (
@@ -58,16 +58,15 @@ const getLetterPairDataFromSequence = (
 	return sequenceLetterPairData;
 };
 
-const today = new Date();
+let today = new Date();
 today.setHours(0);
 today.setMinutes(0);
 today.setSeconds(0);
 today.setMilliseconds(0);
 
-const LETTER_PAIR_SEQUENCE_LEN = 5;
 const todayLetterPairSequence = generateLetterPairSequence(
 	today,
-	LETTER_PAIR_SEQUENCE_LEN,
+	GAME_WINNING_SCORE + 1,
 	availableLetterPairData
 );
 

@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { MIN_TIME_DIFF } from '$lib/constants';
+	import { finishedDaily } from '$lib/stores';
+	import type { PageProps } from '../../routes/$types';
 
 	let today = new Date();
 	today.setHours(0);
@@ -31,6 +33,8 @@
 
 			tomorrow = new Date(today);
 			tomorrow.setDate(today.getDate() + 1);
+
+			finishedDaily.set('false');
 		}
 	}, 1000);
 </script>

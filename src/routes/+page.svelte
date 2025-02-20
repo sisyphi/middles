@@ -17,7 +17,6 @@
 	// 	}
 	// }
 
-	// console.log(JSON.stringify(letterPairData));
 	import Logo from '$lib/icons/Logo.svg';
 	let bgPosition: number = $state(0);
 	const xDir = Math.random() > 0.5 ? 1 : -1;
@@ -28,9 +27,8 @@
 	}, 0.1);
 
 	import type { PageProps } from './$types';
-	import Results from '$lib/components/Results.svelte';
-	import { convertSecondsToMinute } from '$lib/utils';
 	import Icon from '@iconify/svelte';
+	import Results from '$lib/components/Results.svelte';
 	import Game from '$lib/components/Game.svelte';
 	import {
 		GAME_WINNING_SCORE,
@@ -40,28 +38,47 @@
 		WORD_MILESTONES
 	} from '$lib/constants';
 
-	let { data }: PageProps = $props();
+	import { finishedDaily } from '$lib/stores';
 
-	console.log(data.todayLetterPairData);
+	let { data }: PageProps = $props();
 
 	const availableLetterPairsData = data.letterPairData.filter(
 		(lpd) => lpd.count >= MINIMUM_WORD_COUNT
 	);
 
+	let gameMode = $state($finishedDaily === 'true' ? 'random' : 'daily');
+
 	let randIdx = $state(Math.floor(Math.random() * availableLetterPairsData.length));
+	let dailyIdx = $state(0);
 	let chosenLetterPairData = $derived.by(() => {
-		let chosenLetterPairData = availableLetterPairsData[randIdx];
-		return chosenLetterPairData;
+		switch (gameMode) {
+			case 'random':
+				return availableLetterPairsData[randIdx];
+			case 'daily':
+				return data.todayLetterPairData[dailyIdx];
+			default:
+				return availableLetterPairsData[randIdx];
+		}
 	});
 
 	let middleLettersInputRef: HTMLInputElement | undefined = $state();
 	let middleLetters = $state('');
 
 	const handleReroll = () => {
-		middleLetters = '';
-		randIdx = Math.floor(Math.random() * availableLetterPairsData.length);
-		middleLettersInputRef?.focus();
-		rerollCount--;
+		switch (gameMode) {
+			case 'random':
+				middleLetters = '';
+				randIdx = Math.floor(Math.random() * availableLetterPairsData.length);
+				middleLettersInputRef?.focus();
+				rerollCount--;
+				break;
+			case 'daily':
+				middleLetters = '';
+				dailyIdx++;
+				middleLettersInputRef?.focus();
+				rerollCount--;
+				break;
+		}
 	};
 
 	const handleSubmit = (e: SubmitEvent) => {
@@ -73,15 +90,33 @@
 			chosenLetterPairData.lastLetter
 		).toUpperCase();
 
-		if (chosenLetterPairData.words.includes(guess)) {
-			score += 1;
-			middleLetters = '';
-			randIdx = Math.floor(Math.random() * availableLetterPairsData.length);
-			middleLettersInputRef?.focus();
+		switch (gameMode) {
+			case 'random':
+				if (chosenLetterPairData.words.includes(guess)) {
+					score += 1;
+					middleLetters = '';
+					randIdx = Math.floor(Math.random() * availableLetterPairsData.length);
+					middleLettersInputRef?.focus();
 
-			answers.push({ word: guess, timestamp: MAX_SECONDS - secondsLeft });
-		} else {
-			middleLetters = '';
+					answers.push({ word: guess, timestamp: MAX_SECONDS - secondsLeft });
+				} else {
+					middleLetters = '';
+				}
+				break;
+			case 'daily':
+				if (chosenLetterPairData.words.includes(guess)) {
+					score += 1;
+					middleLetters = '';
+					dailyIdx++;
+					middleLettersInputRef?.focus();
+
+					answers.push({ word: guess, timestamp: MAX_SECONDS - secondsLeft });
+				} else {
+					middleLetters = '';
+				}
+				break;
+			default:
+				break;
 		}
 
 		middleLettersInputRef?.focus();
@@ -111,6 +146,11 @@
 		secondsLeft = MAX_SECONDS;
 		answers = [];
 		rerollCount = MAX_REROLL_COUNT;
+		if (gameMode == 'daily') {
+			dailyIdx = 0;
+			finishedDaily.set('true');
+			gameMode = 'random';
+		}
 	};
 
 	$effect(() => {
