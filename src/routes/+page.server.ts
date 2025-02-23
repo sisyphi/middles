@@ -1,4 +1,4 @@
-import { GAME_WINNING_SCORE, MINIMUM_WORD_COUNT } from '$lib/constants';
+import { GAME_WINNING_SCORE, MINIMUM_WORD_COUNT, ORIGIN_DATE } from '$lib/constants';
 import letterPairDataJson from '$lib/server/data/letterPairData.json';
 
 type LetterPairData = { firstLetter: string; lastLetter: string; count: number; words: string[] };
@@ -17,13 +17,7 @@ const generateLetterPairSequence = (
 	const dayOfMonth = date.getDate();
 	const dayOfWeek = date.getDay();
 
-	const origin = new Date('02/20/2025');
-	origin.setHours(0);
-	origin.setMinutes(0);
-	origin.setSeconds(0);
-	origin.setMilliseconds(0);
-
-	let timeDiff = date.getTime() - origin.getTime();
+	let timeDiff = date.getTime() - ORIGIN_DATE.getTime();
 
 	let dayDiff = Math.round(timeDiff / (1000 * 3600 * 24));
 

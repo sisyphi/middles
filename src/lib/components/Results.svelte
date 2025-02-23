@@ -1,11 +1,5 @@
 <script lang="ts">
-	import {
-		MAX_SECONDS,
-		MILESTONE_TITLES,
-		MIN_TIME_DIFF,
-		TIME_MILESTONES,
-		WORD_MILESTONES
-	} from '$lib/constants';
+	import { MAX_SECONDS, MILESTONE_TITLES, TIME_MILESTONES, WORD_MILESTONES } from '$lib/constants';
 	import Icon from '@iconify/svelte';
 	import { convertSecondsToMinute } from '$lib/utils';
 	import { format } from 'date-fns-tz';
@@ -40,14 +34,16 @@
 
 	let {
 		showToast = $bindable(),
+		isPlaying = $bindable(),
 		...props
 	}: {
-		handleResetGame: (e: SubmitEvent) => void;
+		handleResetGame: () => void;
 		wordMilestoneIdx: number;
 		timeMilestoneIdx: number;
 		answers: { word: string; timestamp: number }[];
 		secondsLeft: number;
 		showToast: boolean;
+		isPlaying: boolean;
 	} = $props();
 
 	let showWordScoreBreakdown = $state(false);
@@ -56,14 +52,15 @@
 
 <form
 	onsubmit={(e) => {
+		e.preventDefault();
+		props.handleResetGame();
 		showTimeScoreBreakdown = false;
 		showWordScoreBreakdown = false;
-		props.handleResetGame(e);
 	}}
-	class="mx-auto mt-32 flex w-full max-w-lg flex-1 flex-col border-r-4 border-l-4 border-[#10141f] bg-[#ebede9] font-sans text-2xl font-bold text-[#10141f]"
+	class="mx-auto mt-32 flex w-full max-w-lg flex-1 flex-col overflow-scroll border-t-4 border-r-4 border-l-4 border-[#10141f] bg-[#ebede9] font-sans text-2xl font-bold text-[#10141f]"
 >
 	<div
-		class="flex h-fit w-full flex-row justify-between border-t-4 border-b-4 border-[#10141f] px-8 py-4 text-center"
+		class="flex h-fit w-full flex-row justify-between border-b-4 border-[#10141f] px-8 py-4 text-center"
 	>
 		{#each { length: WORD_MILESTONES.length - 1 + TIME_MILESTONES.length - 1 }, idx}
 			<div class="aspect-square w-1/8 border-4">
@@ -226,6 +223,19 @@
 			class="w-1/2 border-t-4 border-b-4 border-l-2 border-[#10141f] p-2 hover:cursor-pointer hover:bg-[#10141f] hover:text-[#ebede9]"
 			>play again?</button
 		>
+	</div>
+	<div class="flex w-full flex-row">
+		<button
+			onclick={() => {
+				props.handleResetGame();
+				showTimeScoreBreakdown = false;
+				showWordScoreBreakdown = false;
+				isPlaying = false;
+			}}
+			class="w-full border-b-4 border-[#10141f] p-2 hover:cursor-pointer hover:bg-[#10141f] hover:text-[#ebede9]"
+		>
+			go home
+		</button>
 	</div>
 
 	<Countdown />

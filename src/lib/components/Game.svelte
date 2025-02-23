@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { GAME_WINNING_SCORE } from '$lib/constants';
+	import { GAME_WINNING_SCORE, MAX_REROLL_COUNT } from '$lib/constants';
 	import { convertSecondsToMinute } from '$lib/utils';
 
 	let {
@@ -55,16 +55,25 @@
 	<div class="flex w-full flex-row">
 		<button
 			type="submit"
-			class="w-1/2 border-t-4 border-r-2 border-b-4 border-[#10141f] p-2 hover:cursor-pointer hover:bg-[#10141f] hover:text-[#ebede9]"
+			class="w-1/2 border-t-4 border-b-4 border-[#10141f] p-2 hover:cursor-pointer hover:bg-[#10141f] hover:text-[#ebede9]"
 		>
 			submit
 		</button>
 		<button
 			disabled={props.rerollCount == 0}
-			class={`w-1/2 border-t-4 border-b-4 border-l-2 border-[#10141f] p-2 ${props.rerollCount > 0 ? 'hover:cursor-pointer hover:bg-[#10141f] hover:text-[#ebede9]' : 'bg-[#577277] text-[#ebede9] hover:cursor-not-allowed'}`}
+			class={`w-1/2 border-t-4 border-b-4 border-l-4 border-[#10141f] p-2 ${props.rerollCount > 0 ? 'hover:cursor-pointer hover:bg-[#10141f] hover:text-[#ebede9]' : 'hover:cursor-not-allowed'}`}
 			onclick={props.handleReroll}
 		>
-			{props.rerollCount > 0 ? 'reroll' : 'goodluck!'}
+			<div class={`${props.rerollCount > 0 ? '' : 'bg-[#ebede9]'}`}>
+				{props.rerollCount > 0 ? 'reroll' : 'goodluck!'}
+			</div>
 		</button>
 	</div>
 </form>
+
+<style>
+	.bg-diagonal-small {
+		opacity: 1;
+		background: repeating-linear-gradient(45deg, #10141f, #10141f 8px, #ebede9 8px, #ebede9 24px);
+	}
+</style>
