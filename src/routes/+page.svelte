@@ -18,6 +18,7 @@
 	// }
 
 	import Logo from '$lib/icons/Logo.svg';
+	import Typewriter, { cascade, concurrent, loop, loopRandom, scramble } from 'svelte-typewriter';
 
 	// let bgPosition: number = $state(0);
 	// const xDir = Math.random() > 0.5 ? 1 : -1;
@@ -188,7 +189,7 @@
 	let timeDiff = new Date(new Date().setHours(0, 0, 0, 0)).getTime() - ORIGIN_DATE.getTime();
 	let dayDiff = Math.round(timeDiff / (1000 * 3600 * 24)) + 1;
 
-	let showModal = $state(true);
+	let showModal = $state(false);
 </script>
 
 <div class="bg-polka flex h-svh flex-col justify-between">
@@ -273,7 +274,8 @@
 					onclick={() => {
 						showModal = true;
 					}}
-					class="w-full border-b-4 px-8 py-4 text-center">how to play?</button
+					class="w-full border-b-4 px-8 py-4 text-center hover:cursor-pointer hover:bg-[#10141f] hover:text-[#ebede9]"
+					>how to play?</button
 				>
 				<div
 					class="flex w-full flex-col justify-center border-[#10141f] px-8 py-4 text-center text-lg leading-6"
@@ -318,7 +320,7 @@
 			bind:isPlaying
 		/>
 	{/if}
-	<div class="absolute right-10 bottom-10 size-16 bg-[#ea5e82]">
+	<div class="absolute right-10 bottom-10 hidden size-16 bg-[#ea5e82] sm:block">
 		<img alt="Jordan Sibug's logo" src={Logo} />
 	</div>
 	{#if showToast}
@@ -338,7 +340,7 @@
 	{/if}
 	{#if showModal}
 		<div
-			class="text-sans absolute top-1/2 left-1/2 flex h-4/5 max-w-xl -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-4 overflow-scroll border-4 border-[#10141f] bg-[#ebede9] px-8 py-4 text-2xl font-bold text-[#10141f]"
+			class="text-sans absolute top-1/2 left-1/2 flex h-4/5 w-xl min-w-sm -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-4 overflow-scroll border-4 border-[#10141f] bg-[#ebede9] px-8 py-4 text-2xl font-bold text-[#10141f]"
 		>
 			<div class="flex w-full flex-row content-center justify-between text-4xl">
 				<div>How to play?</div>
@@ -351,14 +353,21 @@
 					<Icon class="self-center" icon="icomoon-free:cross" width="16" height="16" />
 				</button>
 			</div>
-			<ul class="ml-4 flex list-disc flex-col gap-4 text-left text-lg">
+			<ul class="ml-4 flex list-disc flex-col gap-12 text-left text-lg">
 				<li class="">
 					<div>
 						With the <span class="text-[#cf573c]">FIRST</span>
 						and <span class="text-[#4f8fba]">LAST</span> letter, fill in the MIDDLE to form a word.
 					</div>
 					<div class="flex w-full flex-row justify-center font-mono text-4xl">
-						<span class="text-[#cf573c]">A</span>NSWE<span class="text-[#4f8fba]">R</span>
+						<span class="text-[#cf573c]">A</span>
+						<Typewriter interval={100} mode={'loop'} cursor={false} delay={500}>
+							<span>NCHO</span>
+							<span>UTHORIZE</span>
+							<span>VATA</span>
+							<span>MBASSADO</span>
+						</Typewriter>
+						<span class="text-[#4f8fba]">R</span>
 					</div>
 				</li>
 				<li>
@@ -366,27 +375,37 @@
 						Remember, you DON'T need to type the <span class="text-[#cf573c]">FIRST</span> and
 						<span class="text-[#4f8fba]">LAST</span> letters.
 					</div>
-					<div class="flex flex-row justify-between gap-4">
-						<div class="flex flex-row content-center gap-2 font-mono text-4xl">
-							<div class="flex flex-row self-center">
-								<span class="text-[#cf573c]">C</span>ORREC<span class="text-[#4f8fba]">T</span>
+					<div class="mx-auto flex max-w-2/3 flex-col content-center gap-2 font-mono text-4xl">
+						<div class="flex w-full flex-row justify-between self-center">
+							<div class="flex w-2/3 flex-row justify-center">
+								<span class="text-[#cf573c]">L</span>
+								<Typewriter interval={100} mode={'loop'} cursor={false} delay={500}>
+									<span>LAST</span>
+									<span>LINGUIST</span>
+								</Typewriter>
+								<span class="text-[#4f8fba]">T</span>
 							</div>
 							<Icon
-								class="self-center text-[#4f8fba]"
-								icon="icomoon-free:checkmark"
-								width="48"
-								height="48"
-							/>
-						</div>
-						<div class="flex flex-row content-center gap-2 align-middle font-mono text-4xl">
-							<div class="flex flex-row self-center">
-								<span class="text-[#cf573c]">W</span>WRONG<span class="text-[#4f8fba]">G</span>
-							</div>
-							<Icon
-								class="self-center text-[#cf573c]"
+								class="w-1/3 self-center text-[#cf573c]"
 								icon="icomoon-free:cross"
 								width="36"
 								height="36"
+							/>
+						</div>
+						<div class="flex w-full flex-row justify-between self-center">
+							<div class="flex w-2/3 flex-row justify-center">
+								<span class="text-[#cf573c]">L</span>
+								<Typewriter interval={100} mode={'loop'} cursor={false} delay={500}>
+									<span>OCKE</span>
+									<span>IEUTENAN</span>
+								</Typewriter>
+								<span class="text-[#4f8fba]">T</span>
+							</div>
+							<Icon
+								class="w-1/3 self-center text-[#4f8fba]"
+								icon="icomoon-free:checkmark"
+								width="48"
+								height="48"
 							/>
 						</div>
 					</div>
@@ -404,8 +423,9 @@
 					</div>
 				</li>
 				<li>
-					<div></div>
-					Get {GAME_WINNING_SCORE} CORRECT ANSWERS before the TIME runs out.
+					<div class="mb-2">
+						Get {GAME_WINNING_SCORE} CORRECT ANSWERS before the TIME runs out.
+					</div>
 					<div class="flex w-full flex-row items-center border-4 border-[#10141f]">
 						<div class=" w-1/2 bg-[#cf573c] p-2 text-center font-mono font-bold text-[#ebede9]">
 							{`0/${GAME_WINNING_SCORE}`}
@@ -413,7 +433,7 @@
 						<div
 							class={`w-1/2 border-l-4 border-[#10141f] bg-[#4f8fba] p-2 text-center font-mono font-bold text-[#ebede9]`}
 						>
-							{convertSecondsToMinute(90)}
+							{convertSecondsToMinute(MAX_SECONDS)}
 						</div>
 					</div>
 				</li>
