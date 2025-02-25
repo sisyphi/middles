@@ -41,15 +41,19 @@
 	</div>
 
 	<div class="my-8 flex flex-row justify-center align-middle font-mono text-4xl">
-		<div class="text-[#cf573c]">{props.chosenLetterPairData.firstLetter}</div>
+		<div class="align-middle leading-normal text-[#cf573c]">
+			{props.chosenLetterPairData.firstLetter}
+		</div>
 		<input
 			style={`width: ${Math.max(1, middleLetters.length)}ch;`}
 			bind:this={middleLettersInputRef}
 			bind:value={middleLetters}
 			type="text"
-			class="text-center uppercase outline-0"
+			class="text-side-adjust-full m-0 box-border block rounded-none border-0 bg-amber-500 p-0 text-center align-middle leading-normal uppercase outline-0 outline-0"
 		/>
-		<div class="text-[#4f8fba]">{props.chosenLetterPairData.lastLetter}</div>
+		<div class="align-middle leading-normal text-[#4f8fba]">
+			{props.chosenLetterPairData.lastLetter}
+		</div>
 	</div>
 
 	<div class="flex w-full flex-row">
@@ -75,5 +79,10 @@
 	.bg-diagonal-small {
 		opacity: 1;
 		background: repeating-linear-gradient(45deg, #10141f, #10141f 8px, #ebede9 8px, #ebede9 24px);
+	}
+
+	.text-side-adjust-full {
+		-webkit-text-size-adjust: 100%;
+		caret-color: transparent;
 	}
 </style>
