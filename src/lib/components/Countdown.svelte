@@ -35,7 +35,7 @@
 	}, 1000);
 </script>
 
-<div class="px-8 py-4 text-center text-lg text-[#10141f]">
+<div class="px-8 py-4 text-center text-lg text-black">
 	next sequence in
 	<span class="font-mono">
 		{`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`}

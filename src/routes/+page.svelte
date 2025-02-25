@@ -18,7 +18,7 @@
 	// }
 
 	import Logo from '$lib/icons/Logo.svg';
-	import Typewriter, { cascade, concurrent, loop, loopRandom, scramble } from 'svelte-typewriter';
+	import Typewriter from 'svelte-typewriter';
 
 	// let bgPosition: number = $state(0);
 	// const xDir = Math.random() > 0.5 ? 1 : -1;
@@ -44,6 +44,7 @@
 	import { finishedDaily } from '$lib/stores';
 	import { format } from 'date-fns-tz';
 	import { convertSecondsToMinute } from '$lib/utils';
+	import Tutorial from '$lib/components/Tutorial.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -153,6 +154,7 @@
 		secondsLeft = MAX_SECONDS;
 		answers = [];
 		rerollCount = MAX_REROLL_COUNT;
+		randIdx = Math.floor(Math.random() * availableLetterPairsData.length);
 		if (gameMode == 'daily') {
 			dailyIdx = 0;
 			$finishedDaily = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
@@ -198,14 +200,14 @@
 
 <div class="bg-polka flex h-svh flex-col justify-between">
 	<!-- style="background-position: {`${bgPosition * xDir}px ${bgPosition * yDir}px`};" -->
-	<div class="h-16 w-full border-b-4 border-[#10141f] bg-[#ebede9]">
-		<div class="mx-auto flex h-full max-w-xl flex-row justify-between">
-			<div class="flex flex-row content-center items-center justify-center gap-4">
-				<div class={gameMode == 'daily' ? 'text-[#cf573c]' : ''}>
+	<div class="h-16 w-full border-b-4 border-black bg-white px-4">
+		<div class="xs:justify-between mx-auto flex h-full max-w-xl flex-row justify-center">
+			<div class="xs:flex hidden flex-row content-center items-center justify-center gap-4">
+				<div class={gameMode == 'daily' ? 'text-red' : ''}>
 					<Icon icon="mdi:calendar-question" width="36" height="36" />
 				</div>
 
-				<div class={gameMode == 'random' ? 'text-[#4f8fba]' : ''}>
+				<div class={gameMode == 'random' ? 'text-blue' : ''}>
 					<Icon icon="ri:dice-line" width="36" height="36" />
 				</div>
 			</div>
@@ -216,16 +218,14 @@
 				}}
 				class="flex flex-row content-center items-center justify-center font-mono text-4xl font-bold hover:cursor-pointer"
 			>
-				<span class="text-5xl text-[#cf573c]">M</span>IDDLE<span class="text-5xl text-[#4f8fba]"
-					>S</span
-				>
+				<span class="text-red text-5xl">M</span>IDDLE<span class="text-blue text-5xl">S</span>
 			</button>
-			<div class="flex flex-row content-center items-center justify-center gap-4">
+			<div class="xs:flex hidden flex-row content-center items-center justify-center gap-4">
 				<button
 					onclick={() => {
 						showModal = true;
 					}}
-					class="ml-[52px] hover:cursor-pointer hover:text-[#4f8fba]"
+					class="hover:text-red ml-[52px] hover:cursor-pointer"
 				>
 					<Icon icon="ri:information-2-fill" width="36" height="36" />
 				</button>
@@ -234,17 +234,17 @@
 	</div>
 	{#if !isPlaying}
 		<div
-			class="mx-auto mt-32 flex w-full max-w-lg flex-1 flex-col items-center justify-between border-r-4 border-l-4 border-[#10141f] bg-[#ebede9] font-sans text-2xl font-bold text-[#10141f]"
+			class="xs:max-w-lg xs:border-r-4 xs:border-l-4 mx-auto mt-32 flex w-full flex-1 flex-col items-center justify-between border-black bg-white font-sans text-2xl font-bold text-black"
 		>
 			<div class="w-full">
-				<div class="flex w-full flex-row border-t-4 border-b-4 border-[#10141f] text-center">
+				<div class="flex w-full flex-row border-t-4 border-b-4 border-black text-center">
 					<button
 						onclick={() => {
 							isPlaying = true;
 						}}
 						disabled={gameMode == 'daily' &&
 							$finishedDaily == new Date(new Date().setHours(0, 0, 0, 0)).toISOString()}
-						class="w-5/7 border-r-4 border-[#10141f] px-8 py-4 hover:cursor-pointer hover:bg-[#10141f] hover:text-[#ebede9]"
+						class="w-5/7 border-r-4 border-black px-8 py-4 hover:cursor-pointer hover:bg-black hover:text-white"
 					>
 						play {gameMode == 'random' ? 'random' : 'daily'}
 					</button>
@@ -254,10 +254,10 @@
 						}}
 						disabled={gameMode == 'daily' ||
 							$finishedDaily == new Date(new Date().setHours(0, 0, 0, 0)).toISOString()}
-						class={`flex w-1/7 flex-row justify-center border-r-4 border-[#10141f] ${$finishedDaily == new Date(new Date().setHours(0, 0, 0, 0)).toISOString() ? 'bg-diagonal-small' : gameMode == 'daily' ? 'bg-[#cf573c] text-[#ebede9] hover:cursor-default hover:text-[#ebede9]' : 'hover:cursor-pointer hover:text-[#cf573c]'}`}
+						class={`flex w-1/7 flex-row justify-center border-r-4 border-black ${$finishedDaily == new Date(new Date().setHours(0, 0, 0, 0)).toISOString() ? 'bg-diagonal-small' : gameMode == 'daily' ? 'bg-red text-white hover:cursor-default hover:text-white' : 'hover:text-red hover:cursor-pointer'}`}
 					>
 						<Icon
-							class={`self-center ${$finishedDaily == new Date(new Date().setHours(0, 0, 0, 0)).toISOString() ? 'bg-[#ebede9]' : ''}`}
+							class={`self-center ${$finishedDaily == new Date(new Date().setHours(0, 0, 0, 0)).toISOString() ? 'bg-white' : ''}`}
 							icon="mdi:calendar-question"
 							width="36"
 							height="36"
@@ -269,7 +269,7 @@
 							gameMode = 'random';
 						}}
 						disabled={gameMode == 'random'}
-						class={`flex w-1/7 flex-row justify-center border-[#10141f] ${gameMode == 'random' ? 'bg-[#4f8fba] text-[#ebede9] hover:cursor-default hover:text-[#ebede9]' : 'hover:cursor-pointer hover:text-[#4f8fba]'}`}
+						class={`flex w-1/7 flex-row justify-center border-black ${gameMode == 'random' ? 'bg-blue text-white hover:cursor-default hover:text-white' : 'hover:text-blue hover:cursor-pointer'}`}
 					>
 						<Icon class="self-center" icon="ri:dice-line" width="36" height="36" />
 					</button>
@@ -278,22 +278,20 @@
 					onclick={() => {
 						showModal = true;
 					}}
-					class="w-full border-b-4 px-8 py-4 text-center hover:cursor-pointer hover:bg-[#10141f] hover:text-[#ebede9]"
+					class="w-full border-b-4 px-8 py-4 text-center hover:cursor-pointer hover:bg-black hover:text-white"
 					>how to play?</button
 				>
 				<div
-					class="flex w-full flex-col justify-center border-[#10141f] px-8 py-4 text-center text-lg leading-6"
+					class="flex w-full flex-col justify-center border-black px-8 py-4 text-center text-lg leading-6"
 				>
 					{`${format(new Date(), 'MMM dd, yyyy')} - Sequence #${dayDiff}`} <br />
 					<span class="text-base">{`by sisyphi`}</span>
 				</div>
 			</div>
 			<div
-				class="bg-diagonal-large flex w-full flex-row justify-center border-t-4 border-b-4 border-[#10141f] px-4 py-8"
+				class="bg-diagonal-large flex w-full flex-row justify-center border-t-4 border-b-4 border-black px-4 py-8"
 			>
-				<div
-					class="flex flex-row gap-4 border-4 bg-[#ebede9] px-8 py-4 text-lg leading-6 text-[#10141f]"
-				>
+				<div class="flex flex-row gap-4 border-4 bg-white px-8 py-4 text-lg leading-6 text-black">
 					<Icon class="self-center" icon="lucide:construction" width="52" height="52" />
 					<div class="flex flex-col justify-center text-center">
 						stats under<br />construction
@@ -324,16 +322,16 @@
 			bind:isPlaying
 		/>
 	{/if}
-	<div class="absolute right-10 bottom-10 hidden size-16 bg-[#ea5e82] sm:block">
+	<div class="absolute right-10 bottom-10 hidden size-16 bg-[#ea5e82] md:block">
 		<img alt="Jordan Sibug's logo" src={Logo} />
 	</div>
 	{#if showToast}
 		<div
-			class="text-sans absolute bottom-5 left-1/2 flex h-16 w-fit -translate-x-1/2 flex-row items-center justify-between gap-2 border-4 border-[#10141f] bg-[#ebede9] px-4 py-2 text-2xl font-bold text-[#10141f]"
+			class="text-sans absolute bottom-5 left-1/2 flex h-16 w-fit -translate-x-1/2 flex-row items-center justify-between gap-2 border-4 border-black bg-white px-4 py-2 text-2xl font-bold text-black"
 		>
 			<div>copied to clipboard!</div>
 			<button
-				class="flex size-8 justify-center align-middle hover:bg-[#10141f] hover:text-[#ebede9]"
+				class="flex size-8 justify-center align-middle hover:bg-black hover:text-white"
 				onclick={() => {
 					showToast = false;
 				}}
@@ -343,107 +341,7 @@
 		</div>
 	{/if}
 	{#if showModal}
-		<div
-			class="text-sans absolute top-1/2 left-1/2 flex h-4/5 w-xl min-w-sm -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-4 overflow-scroll border-4 border-[#10141f] bg-[#ebede9] px-8 py-4 text-2xl font-bold text-[#10141f]"
-		>
-			<div class="flex w-full flex-row content-center justify-between text-4xl">
-				<div>How to play?</div>
-				<button
-					class="flex size-8 flex-row justify-center self-center hover:bg-[#10141f] hover:text-[#ebede9]"
-					onclick={() => {
-						showModal = false;
-					}}
-				>
-					<Icon class="self-center" icon="icomoon-free:cross" width="16" height="16" />
-				</button>
-			</div>
-			<ul class="ml-4 flex list-disc flex-col gap-12 text-left text-lg">
-				<li class="">
-					<div>
-						With the <span class="text-[#cf573c]">FIRST</span>
-						and <span class="text-[#4f8fba]">LAST</span> letter, fill in the MIDDLE to form a word.
-					</div>
-					<div class="flex w-full flex-row justify-center font-mono text-4xl">
-						<span class="text-[#cf573c]">A</span>
-						<Typewriter interval={100} mode={'loop'} cursor={false} delay={500}>
-							<span>NCHO</span>
-							<span>UTHORIZE</span>
-							<span>VATA</span>
-							<span>MBASSADO</span>
-						</Typewriter>
-						<span class="text-[#4f8fba]">R</span>
-					</div>
-				</li>
-				<li>
-					<div>
-						Remember, you DON'T need to type the <span class="text-[#cf573c]">FIRST</span> and
-						<span class="text-[#4f8fba]">LAST</span> letters.
-					</div>
-					<div class="mx-auto flex max-w-2/3 flex-col content-center gap-2 font-mono text-4xl">
-						<div class="flex w-full flex-row justify-between self-center">
-							<div class="flex w-2/3 flex-row justify-center">
-								<span class="text-[#cf573c]">L</span>
-								<Typewriter interval={100} mode={'loop'} cursor={false} delay={500}>
-									<span>LAST</span>
-									<span>LINGUIST</span>
-								</Typewriter>
-								<span class="text-[#4f8fba]">T</span>
-							</div>
-							<Icon
-								class="w-1/3 self-center text-[#cf573c]"
-								icon="icomoon-free:cross"
-								width="36"
-								height="36"
-							/>
-						</div>
-						<div class="flex w-full flex-row justify-between self-center">
-							<div class="flex w-2/3 flex-row justify-center">
-								<span class="text-[#cf573c]">L</span>
-								<Typewriter interval={100} mode={'loop'} cursor={false} delay={500}>
-									<span>OCKE</span>
-									<span>IEUTENAN</span>
-								</Typewriter>
-								<span class="text-[#4f8fba]">T</span>
-							</div>
-							<Icon
-								class="w-1/3 self-center text-[#4f8fba]"
-								icon="icomoon-free:checkmark"
-								width="48"
-								height="48"
-							/>
-						</div>
-					</div>
-				</li>
-				<li>
-					<div>Press ENTER or the submit button to send your answer.</div>
-					<div class="flex flex-row justify-center gap-4">
-						<Icon icon="icon-park-solid:enter-key" width="56" height="56" />
-						<span class="self-center">or</span>
-						<div
-							class="h-fit w-1/3 self-center border-4 border-[#10141f] p-2 text-center hover:cursor-pointer hover:bg-[#10141f] hover:text-[#ebede9]"
-						>
-							submit
-						</div>
-					</div>
-				</li>
-				<li>
-					<div class="mb-2">
-						Get {GAME_WINNING_SCORE} CORRECT ANSWERS before the TIME runs out.
-					</div>
-					<div class="flex w-full flex-row items-center border-4 border-[#10141f]">
-						<div class=" w-1/2 bg-[#cf573c] p-2 text-center font-mono font-bold text-[#ebede9]">
-							{`0/${GAME_WINNING_SCORE}`}
-						</div>
-						<div
-							class={`w-1/2 border-l-4 border-[#10141f] bg-[#4f8fba] p-2 text-center font-mono font-bold text-[#ebede9]`}
-						>
-							{convertSecondsToMinute(MAX_SECONDS)}
-						</div>
-					</div>
-				</li>
-				<li>Longer words and faster times gets you higher scores.</li>
-			</ul>
-		</div>
+		<Tutorial bind:showModal />
 	{/if}
 </div>
 
