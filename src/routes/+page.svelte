@@ -43,7 +43,6 @@
 
 	import { finishedDaily } from '$lib/stores';
 	import { format } from 'date-fns-tz';
-	import { convertSecondsToMinute } from '$lib/utils';
 	import Tutorial from '$lib/components/Tutorial.svelte';
 
 	let { data }: PageProps = $props();
@@ -125,6 +124,10 @@
 				break;
 		}
 
+		if (score == GAME_WINNING_SCORE) {
+			isGameWon = true;
+		}
+
 		middleLettersInputRef?.focus();
 	};
 
@@ -137,9 +140,6 @@
 	}, 100);
 
 	$effect(() => {
-		if (score == GAME_WINNING_SCORE) {
-			isGameWon = true;
-		}
 		if (secondsLeft <= 0) {
 			isGameLost = true;
 		}
