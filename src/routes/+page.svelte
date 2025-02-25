@@ -133,7 +133,7 @@
 	let isGameLost = $state(false);
 
 	setInterval(() => {
-		if (!isGameWon && !isGameLost) secondsLeft -= 0.1;
+		if (isPlaying && !isGameWon && !isGameLost) secondsLeft -= 0.1;
 	}, 100);
 
 	$effect(() => {
