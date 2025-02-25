@@ -18,7 +18,6 @@
 	// }
 
 	import Logo from '$lib/icons/Logo.svg';
-	import Typewriter from 'svelte-typewriter';
 
 	// let bgPosition: number = $state(0);
 	// const xDir = Math.random() > 0.5 ? 1 : -1;
@@ -203,13 +202,14 @@
 	<div class="h-16 w-full border-b-4 border-black bg-white px-4">
 		<div class="xs:justify-between mx-auto flex h-full max-w-xl flex-row justify-center">
 			<div class="xs:flex hidden flex-row content-center items-center justify-center gap-4">
-				<div class={gameMode == 'daily' ? 'text-red' : ''}>
+				<div class="w-[88px]"></div>
+				<!-- <div class={gameMode == 'daily' ? 'text-red' : ''}>
 					<Icon icon="mdi:calendar-question" width="36" height="36" />
 				</div>
 
 				<div class={gameMode == 'random' ? 'text-blue' : ''}>
 					<Icon icon="ri:dice-line" width="36" height="36" />
-				</div>
+				</div> -->
 			</div>
 			<button
 				onclick={() => {
