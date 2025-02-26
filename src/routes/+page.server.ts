@@ -1,7 +1,11 @@
 import { GAME_WINNING_SCORE, MINIMUM_WORD_COUNT, ORIGIN_DATE } from '$lib/constants';
 import letterPairDataJson from '$lib/server/data/letterPairData.json';
 
-type LetterPairData = { firstLetter: string; lastLetter: string; count: number; words: string[] };
+type LetterPairData = {
+	pair: { firstLetter: string; lastLetter: string };
+	count: number;
+	words: string[];
+};
 
 const letterPairData = letterPairDataJson as LetterPairData[];
 
@@ -30,8 +34,8 @@ const generateLetterPairSequence = (
 		const multi = dayOfWeek;
 		const idx = (base + ctr * skip * multi) % letterPairData.length;
 		letterPairSequence.push({
-			first: letterPairData[idx].firstLetter,
-			last: letterPairData[idx].lastLetter
+			first: letterPairData[idx].pair.firstLetter,
+			last: letterPairData[idx].pair.lastLetter
 		});
 		ctr++;
 	}
@@ -45,7 +49,7 @@ const getLetterPairDataFromSequence = (
 	let sequenceLetterPairData: LetterPairData[] = [];
 	for (let lps of letterPairSequence) {
 		const foundLPD = letterPairData.find(
-			(lp) => lp.firstLetter == lps.first && lp.lastLetter == lps.last
+			(lp) => lp.pair.firstLetter == lps.first && lp.pair.lastLetter == lps.last
 		);
 		if (foundLPD) sequenceLetterPairData.push(foundLPD);
 	}

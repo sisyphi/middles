@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { GAME_WINNING_SCORE, MAX_REROLL_COUNT } from '$lib/constants';
+	import { GAME_WINNING_SCORE } from '$lib/constants';
 	import { convertSecondsToMinute } from '$lib/utils';
 
 	let {
@@ -11,8 +11,10 @@
 		score: number;
 		secondsLeft: number;
 		chosenLetterPairData: {
-			firstLetter: string;
-			lastLetter: string;
+			pair: {
+				firstLetter: string;
+				lastLetter: string;
+			};
 			count: number;
 			words: string[];
 		};
@@ -42,7 +44,7 @@
 
 	<div class="my-8 flex flex-row justify-center align-middle font-mono text-4xl">
 		<div class="text-red align-middle leading-normal">
-			{props.chosenLetterPairData.firstLetter}
+			{props.chosenLetterPairData.pair.firstLetter}
 		</div>
 		<input
 			style={`width: ${Math.max(1, middleLetters.length)}ch;`}
@@ -52,7 +54,7 @@
 			class="m-0 box-border block rounded-none border-0 p-0 text-center align-middle leading-normal uppercase outline-0"
 		/>
 		<div class="text-blue align-middle leading-normal">
-			{props.chosenLetterPairData.lastLetter}
+			{props.chosenLetterPairData.pair.lastLetter}
 		</div>
 	</div>
 

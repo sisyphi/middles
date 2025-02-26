@@ -1,14 +1,18 @@
 <script lang="ts">
-	// import dictTxt from '$lib/data/dictionary.txt?raw';
+	// import dictTxt from '$lib/data/words_alpha.txt?raw';
 	// import lettersTxt from '$lib/data/letters.txt?raw';
 
-	// const dict = dictTxt.split('\n');
+	// let dict = dictTxt.split('\r\n');
 	// const letters = lettersTxt.split('\n');
+
+	// dict = dict.map((word) => word.toLowerCase());
 
 	// const letterPairData = [];
 	// for (const f of letters) {
 	// 	for (const l of letters) {
-	// 		const words = dict.filter((w) => w[0] == f && w[w.length - 1] == l);
+	// 		const words = dict.filter(
+	// 			(w) => w[0] == f.toLowerCase() && w[w.length - 1] == l.toLowerCase()
+	// 		);
 	// 		letterPairData.push({
 	// 			pair: { firstLetter: f, lastLetter: l },
 	// 			count: words.length,
@@ -19,12 +23,7 @@
 
 	import Logo from '$lib/icons/Logo.svg';
 
-	// let bgPosition: number = $state(0);
-	// const xDir = Math.random() > 0.5 ? 1 : -1;
-	// const yDir = Math.random() > 0.5 ? 1 : -1;
-	// setInterval(() => {
-	// 	bgPosition = Math.round(((bgPosition + 0.05) % 200) * 200) / 200;
-	// }, 0.1);
+	import { wordHighscore, timeHighscore } from '$lib/stores';
 
 	import type { PageProps } from './$types';
 	import Icon from '@iconify/svelte';
@@ -43,6 +42,7 @@
 	import { finishedDaily } from '$lib/stores';
 	import { format } from 'date-fns-tz';
 	import Tutorial from '$lib/components/Tutorial.svelte';
+	import { convertSecondsToMinute } from '$lib/utils';
 
 	let { data }: PageProps = $props();
 
@@ -89,9 +89,9 @@
 		e.preventDefault();
 
 		const guess = (
-			chosenLetterPairData.firstLetter +
+			chosenLetterPairData.pair.firstLetter +
 			middleLetters +
-			chosenLetterPairData.lastLetter
+			chosenLetterPairData.pair.lastLetter
 		).toUpperCase();
 
 		switch (gameMode) {
@@ -125,6 +125,11 @@
 
 		if (score == GAME_WINNING_SCORE) {
 			isGameWon = true;
+			const wordScore = answers.map((a) => a.word.length).reduce((acc, curr) => acc + curr, 0);
+			if (wordScore >= +$wordHighscore) {
+				$wordHighscore = wordScore.toString();
+				$timeHighscore = `${Math.floor(MAX_SECONDS - secondsLeft)}`;
+			}
 		}
 
 		middleLettersInputRef?.focus();
@@ -237,14 +242,14 @@
 			class="xs:max-w-lg xs:border-r-4 xs:border-l-4 mx-auto mt-32 flex w-full flex-1 flex-col items-center justify-between border-black bg-white font-sans text-2xl font-bold text-black"
 		>
 			<div class="w-full">
-				<div class="flex w-full flex-row border-t-4 border-b-4 border-black text-center">
+				<div class="flex w-full flex-row border-t-4 border-b-4 border-black">
 					<button
 						onclick={() => {
 							isPlaying = true;
 						}}
 						disabled={gameMode == 'daily' &&
 							$finishedDaily == new Date(new Date().setHours(0, 0, 0, 0)).toISOString()}
-						class="w-5/7 border-r-4 border-black px-8 py-4 hover:cursor-pointer hover:bg-black hover:text-white"
+						class="w-5/7 border-r-4 border-black px-8 py-4 text-left hover:cursor-pointer hover:bg-black hover:text-white"
 					>
 						play {gameMode == 'random' ? 'random' : 'daily'}
 					</button>
@@ -278,9 +283,27 @@
 					onclick={() => {
 						showModal = true;
 					}}
-					class="w-full border-b-4 px-8 py-4 text-center hover:cursor-pointer hover:bg-black hover:text-white"
+					class="w-full border-b-4 border-black px-8 py-4 text-left hover:cursor-pointer hover:bg-black hover:text-white"
 					>how to play?</button
 				>
+				<div
+					class="xs:gap-0 flex w-full flex-col items-center justify-center gap-4 border-b-4 border-black px-8 py-4"
+				>
+					<!-- <div class="xs:flex-row flex w-full flex-col justify-between">
+						<div>best <span class="text-red">daily</span> score</div>
+						<div>
+							<span class="text-red font-mono">{$wordHighscore}</span> in
+							<span class="text-blue font-mono">{convertSecondsToMinute(+$timeHighscore)}</span>
+						</div>
+					</div> -->
+					<div class="xs:flex-row flex w-full flex-col justify-between text-left">
+						<div>best <span class="text-blue">random</span> score</div>
+						<div>
+							<span class="text-red font-mono">{$wordHighscore}</span> in
+							<span class="text-blue font-mono">{convertSecondsToMinute(+$timeHighscore)}</span>
+						</div>
+					</div>
+				</div>
 				<div
 					class="flex w-full flex-col justify-center border-black px-8 py-4 text-center text-lg leading-6"
 				>
@@ -288,7 +311,7 @@
 					<span class="text-base">{`by sisyphi`}</span>
 				</div>
 			</div>
-			<div
+			<!-- <div
 				class="bg-diagonal-large flex w-full flex-row justify-center border-t-4 border-b-4 border-black px-4 py-8"
 			>
 				<div class="flex flex-row gap-4 border-4 bg-white px-8 py-4 text-lg leading-6 text-black">
@@ -298,7 +321,7 @@
 					</div>
 					<Icon class="self-center" icon="lucide:construction" width="52" height="52" />
 				</div>
-			</div>
+			</div> -->
 		</div>
 	{:else if !isGameWon && !isGameLost}
 		<Game
