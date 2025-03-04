@@ -8,7 +8,7 @@
 </script>
 
 <div
-	class="text-sans xs:bottom-0 xs:left-1/2 xs:w-lg xs:-translate-x-1/2 xs:h-4/5 xs:border-4 xs:border-b-0 absolute flex h-full w-full min-w-sm flex-col items-center gap-4 overflow-scroll border-black bg-white pb-4 text-2xl font-bold text-black"
+	class="text-sans xs:bottom-0 xs:left-1/2 xs:w-lg xs:-translate-x-1/2 xs:h-4/5 xs:border-4 xs:border-b-0 absolute flex h-full w-full min-w-sm flex-col items-center gap-4 overflow-x-clip overflow-y-scroll border-black bg-white pb-4 text-2xl font-bold text-black"
 >
 	<div
 		class="sticky top-0 flex w-full flex-row content-center justify-between border-b-4 border-black bg-white px-8 py-4 pb-4 text-4xl"

@@ -23,11 +23,10 @@
 
 	import Logo from '$lib/icons/Logo.svg';
 
-	import { wordHighscore, timeHighscore } from '$lib/stores';
+	import { wordHighscore, timeHighscore, todayAnswers, todaySecondsLeft } from '$lib/stores';
 
 	import type { PageProps } from './$types';
 	import Icon from '@iconify/svelte';
-	import Results from '$lib/components/Results.svelte';
 	import Game from '$lib/components/Game.svelte';
 	import {
 		GAME_WINNING_SCORE,
@@ -39,10 +38,13 @@
 		WORD_MILESTONES
 	} from '$lib/constants';
 
-	import { finishedDaily } from '$lib/stores';
+	import { todayFinished } from '$lib/stores';
 	import { format } from 'date-fns-tz';
 	import Tutorial from '$lib/components/Tutorial.svelte';
-	import { convertSecondsToMinute } from '$lib/utils';
+	import { convertSecondsToMinute, isDailyFinished } from '$lib/utils';
+	import CopiedModal from '$lib/components/CopiedModal.svelte';
+	import ResultsV2 from '$lib/components/ResultsV2.svelte';
+	import { get } from 'svelte/store';
 
 	let { data }: PageProps = $props();
 
@@ -102,7 +104,10 @@
 					randIdx = Math.floor(Math.random() * availableLetterPairsData.length);
 					middleLettersInputRef?.focus();
 
-					answers.push({ word: guess, timestamp: MAX_SECONDS - secondsLeft });
+					answers.push({
+						word: guess,
+						timestamp: MAX_SECONDS - secondsLeft
+					});
 				} else {
 					middleLetters = '';
 				}
@@ -114,7 +119,23 @@
 					dailyIdx++;
 					middleLettersInputRef?.focus();
 
-					answers.push({ word: guess, timestamp: MAX_SECONDS - secondsLeft });
+					dailyAnswers.push({
+						word: guess,
+						timestamp: MAX_SECONDS - secondsLeft
+					});
+
+					$todayAnswers =
+						$todayAnswers === 'none'
+							? `[${JSON.stringify({
+									word: guess,
+									timestamp: MAX_SECONDS - secondsLeft
+								})}]`
+							: `[${$todayAnswers.replace('[', '').replace(']', '')},${JSON.stringify({
+									word: guess,
+									timestamp: MAX_SECONDS - secondsLeft
+								})}]`;
+
+					$todaySecondsLeft = secondsLeft.toString();
 				} else {
 					middleLetters = '';
 				}
@@ -161,7 +182,7 @@
 		randIdx = Math.floor(Math.random() * availableLetterPairsData.length);
 		if (gameMode == 'daily') {
 			dailyIdx = 0;
-			$finishedDaily = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
+			$todayFinished = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
 			gameMode = 'random';
 		}
 	};
@@ -170,7 +191,15 @@
 		if (!isGameWon) middleLettersInputRef?.focus();
 	});
 
-	let answers: { word: string; timestamp: number }[] = $state([]);
+	let dailyAnswers: {
+		word: string;
+		timestamp: number;
+	}[] = $state([]);
+
+	let answers: {
+		word: string;
+		timestamp: number;
+	}[] = $state([]);
 
 	const getTotalLetterCount = (words: string[]): number => {
 		return words.map((a) => a.length).reduce((acc, curr) => acc + curr, 0);
@@ -200,6 +229,8 @@
 	let dayDiff = Math.round(timeDiff / (1000 * 3600 * 24)) + 1;
 
 	let showModal = $state(false);
+
+	let showDailyScoreBreakdown = $state(false);
 </script>
 
 <div class="bg-polka flex h-svh flex-col justify-between">
@@ -239,45 +270,63 @@
 	</div>
 	{#if !isPlaying}
 		<div
-			class="xs:max-w-lg xs:border-r-4 xs:border-l-4 mx-auto mt-32 flex w-full flex-1 flex-col items-center justify-between border-black bg-white font-sans text-2xl font-bold text-black"
+			class="xs:max-w-lg xs:border-r-4 xs:border-l-4 mx-auto mt-32 flex w-full flex-1 flex-col items-center justify-between border-t-4 border-black bg-white font-sans text-2xl font-bold text-black"
 		>
 			<div class="w-full">
-				<div class="flex w-full flex-row border-t-4 border-b-4 border-black">
-					<button
-						onclick={() => {
-							isPlaying = true;
-						}}
-						disabled={gameMode == 'daily' &&
-							$finishedDaily == new Date(new Date().setHours(0, 0, 0, 0)).toISOString()}
-						class="w-5/7 border-r-4 border-black px-8 py-4 text-left hover:cursor-pointer hover:bg-black hover:text-white"
-					>
-						play {gameMode == 'random' ? 'random' : 'daily'}
-					</button>
-					<button
-						onclick={() => {
-							gameMode = 'daily';
-						}}
-						disabled={gameMode == 'daily' ||
-							$finishedDaily == new Date(new Date().setHours(0, 0, 0, 0)).toISOString()}
-						class={`flex w-1/7 flex-row justify-center border-r-4 border-black ${$finishedDaily == new Date(new Date().setHours(0, 0, 0, 0)).toISOString() ? 'bg-diagonal-small' : gameMode == 'daily' ? 'bg-red text-white hover:cursor-default hover:text-white' : 'hover:text-red hover:cursor-pointer'}`}
-					>
-						<Icon
-							class={`self-center ${$finishedDaily == new Date(new Date().setHours(0, 0, 0, 0)).toISOString() ? 'bg-white' : ''}`}
-							icon="mdi:calendar-question"
-							width="36"
-							height="36"
-						/>
-					</button>
-
-					<button
-						onclick={() => {
-							gameMode = 'random';
-						}}
-						disabled={gameMode == 'random'}
-						class={`flex w-1/7 flex-row justify-center border-black ${gameMode == 'random' ? 'bg-blue text-white hover:cursor-default hover:text-white' : 'hover:text-blue hover:cursor-pointer'}`}
-					>
-						<Icon class="self-center" icon="ri:dice-line" width="36" height="36" />
-					</button>
+				<div class="xs:flex-row flex w-full flex-col">
+					<div class={`xs:border-r-4 xs:w-1/2 flex w-full flex-row border-b-4 border-black`}>
+						<button
+							onclick={() => {
+								gameMode = 'daily';
+								isPlaying = true;
+							}}
+							disabled={isDailyFinished()}
+							class={`flex w-full flex-row gap-2 border-black px-8 py-4 text-left ${isDailyFinished() ? 'hover:cursor-not-allowed' : 'hover:bg-red hover:cursor-pointer hover:**:text-white'}`}
+						>
+							{#if isDailyFinished()}
+								<Icon
+									class="xs:order-1 order-2 self-center"
+									icon="icomoon-free:checkmark"
+									width="36"
+									height="36"
+								/>
+							{:else}
+								<Icon
+									class="xs:order-1 order-2 self-center"
+									icon="mdi:calendar-question"
+									width="36"
+									height="36"
+								/>
+							{/if}
+							<span class="xs:order-2 order-1 self-center">
+								{#if isDailyFinished()}
+									<span class="text-red">daily</span> done
+								{:else}
+									<span class="text-red">daily</span> play
+								{/if}
+							</span>
+						</button>
+					</div>
+					<div class="xs:w-1/2 flex w-full flex-row border-b-4 border-black">
+						<button
+							onclick={() => {
+								gameMode = 'random';
+								isPlaying = true;
+							}}
+							disabled={gameMode == 'daily' && isDailyFinished()}
+							class="hover:bg-blue flex w-full flex-row gap-2 border-black px-8 py-4 text-left hover:cursor-pointer hover:**:text-white"
+						>
+							<Icon
+								class="xs:order-1 order-2 self-center"
+								icon="ri:dice-line"
+								width="36"
+								height="36"
+							/>
+							<span class="xs:order-2 order-1 self-center">
+								<span class="text-blue">random</span> play
+							</span>
+						</button>
+					</div>
 				</div>
 				<button
 					onclick={() => {
@@ -296,18 +345,108 @@
 							<span class="text-blue font-mono">{convertSecondsToMinute(+$timeHighscore)}</span>
 						</div>
 					</div> -->
-					<div class="xs:flex-row flex w-full flex-col justify-between text-left">
-						<div>best <span class="text-blue">random</span> score</div>
-						<div>
-							<span class="text-red font-mono">{$wordHighscore}</span> in
+					<div class="xs:flex-row xs:justify-between flex w-full flex-col text-left">
+						<span class="xs:self-center"> best score </span>
+						<span class="xs:self-center">
+							<span class="text-red font-mono">{$wordHighscore}</span>
+							in
 							<span class="text-blue font-mono">{convertSecondsToMinute(+$timeHighscore)}</span>
-						</div>
+						</span>
 					</div>
 				</div>
+				{#if isDailyFinished()}
+					<div class="xs:px-8 xs:py-4 flex w-full flex-col border-b-4 border-black px-8 py-4">
+						<button
+							disabled={$todayAnswers === 'none'}
+							class={`w-full ${$todayAnswers !== 'none' ? 'hover:cursor-pointer' : ''}`}
+							onclick={(e) => {
+								e.preventDefault();
+								showDailyScoreBreakdown = !showDailyScoreBreakdown;
+							}}
+						>
+							<div class="flex w-full flex-row justify-between">
+								<span><span class="text-red">daily</span> stats</span>
+								<span class="flex flex-row items-center gap-2">
+									{#if $todayAnswers !== 'none'}
+										{#if !showDailyScoreBreakdown}
+											<Icon icon="oi:chevron-bottom" width="16" height="16" />
+										{:else}
+											<Icon icon="oi:chevron-top" width="16" height="16" />
+										{/if}
+									{/if}
+								</span>
+							</div>
+						</button>
+						{#if showDailyScoreBreakdown}
+							<div class="flex flex-col justify-between text-lg">
+								{#each JSON.parse($todayAnswers) as answer, idx}
+									<div
+										class={`flex w-full flex-row justify-between ${
+											idx == JSON.parse($todayAnswers).length - 1
+												? 'mb-2 border-b-4 border-black pb-2'
+												: ''
+										} ${idx == 0 ? 'mt-4' : ''}`}
+									>
+										<div>{answer.word}</div>
+										<div class="flex flex-row justify-between gap-4 font-mono">
+											<span class="text-red">
+												{String(answer.word.length.toString()).padStart(2, '0')}
+											</span>
+											<span class="text-blue">
+												+{convertSecondsToMinute(
+													answer.timestamp -
+														(idx == 0 ? 0 : JSON.parse($todayAnswers)[idx - 1].timestamp)
+												)}
+											</span>
+										</div>
+									</div>
+								{/each}
+							</div>
+							<div class="flex flex-row justify-between text-2xl">
+								<div>FINAL SCORE</div>
+								<div class="flex flex-row justify-between gap-4 font-mono">
+									<span class="text-red">
+										{JSON.parse($todayAnswers)
+											.map((a: { word: string; timestamp: number }) => a.word.length)
+											.reduce((acc: number, curr: number) => acc + curr, 0)
+											.toString()
+											.padStart(2, '0')}
+									</span>
+									<span class="text-blue">
+										{convertSecondsToMinute(MAX_SECONDS - +$todaySecondsLeft)}
+									</span>
+								</div>
+							</div>
+							<div class="mt-4 grid overflow-clip border-4 border-black text-white">
+								<div
+									class={`bg-blue border-red col-start-1 row-start-1 h-8 border-r-4`}
+									style={`width: ${((MAX_SECONDS - +$todaySecondsLeft) / MAX_SECONDS) * 100 + 0.5}%`}
+								></div>
+
+								{#each JSON.parse($todayAnswers) as answer}
+									<div
+										class="border-red col-start-1 row-start-1 h-full border-r-4"
+										style={`width:  ${(answer.timestamp / MAX_SECONDS) * 100 + 0.5}%;`}
+									></div>
+								{/each}
+								{#each { length: MAX_SECONDS / 5 + 1 }, idx}
+									{#if idx != 0 && idx != MAX_SECONDS / 5}
+										<div
+											class={`col-start-1 row-start-1 -mt-0.5 border-r-4 border-black ${idx % 2 == 0 ? 'h-4' : 'h-2'}`}
+											style={`width: ${(idx / (MAX_SECONDS / 5)) * 100 + 0.5}%`}
+										></div>
+									{/if}
+								{/each}
+							</div>
+							<div class="text-xs text-black">* each tick represents 5 seconds</div>
+						{/if}
+					</div>
+				{/if}
 				<div
 					class="flex w-full flex-col justify-center border-black px-8 py-4 text-center text-lg leading-6"
 				>
-					{`${format(new Date(), 'MMM dd, yyyy')} - Sequence #${dayDiff}`} <br />
+					{`${format(new Date(), 'MMM dd, yyyy')} - Sequence #${dayDiff}`}
+					<br />
 					<span class="text-base">{`by sisyphi`}</span>
 				</div>
 			</div>
@@ -335,11 +474,20 @@
 			{handleReroll}
 		/>
 	{:else}
-		<Results
+		<!-- <Results
 			{handleResetGame}
 			{wordMilestoneIdx}
 			{timeMilestoneIdx}
 			{answers}
+			{secondsLeft}
+			bind:showToast
+			bind:isPlaying
+		/> -->
+		<ResultsV2
+			{handleResetGame}
+			{wordMilestoneIdx}
+			{timeMilestoneIdx}
+			answers={gameMode === 'daily' ? dailyAnswers : answers}
 			{secondsLeft}
 			bind:showToast
 			bind:isPlaying
@@ -349,19 +497,7 @@
 		<img alt="Jordan Sibug's logo" src={Logo} />
 	</div>
 	{#if showToast}
-		<div
-			class="text-sans absolute bottom-5 left-1/2 flex h-16 w-fit -translate-x-1/2 flex-row items-center justify-between gap-2 border-4 border-black bg-white px-4 py-2 text-2xl font-bold text-black"
-		>
-			<div>copied to clipboard!</div>
-			<button
-				class="flex size-8 justify-center align-middle hover:bg-black hover:text-white"
-				onclick={() => {
-					showToast = false;
-				}}
-			>
-				<Icon class="self-center" icon="icomoon-free:cross" width="16" height="16" />
-			</button>
-		</div>
+		<CopiedModal bind:showToast />
 	{/if}
 	{#if showModal}
 		<Tutorial bind:showModal />
@@ -376,12 +512,12 @@
 		background-size: 50px 50px;
 	}
 
-	.bg-diagonal-large {
+	.bg-diagonal-lg {
 		opacity: 1;
 		background: repeating-linear-gradient(45deg, #10141f, #10141f 16px, #ebede9 16px, #ebede9 48px);
 	}
 
-	.bg-diagonal-small {
+	.bg-diagonal-sm {
 		opacity: 1;
 		background: repeating-linear-gradient(45deg, #10141f, #10141f 8px, #ebede9 8px, #ebede9 24px);
 	}
