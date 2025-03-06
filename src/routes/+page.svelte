@@ -44,7 +44,6 @@
 	import { convertSecondsToMinute, isDailyFinished } from '$lib/utils';
 	import CopiedModal from '$lib/components/CopiedModal.svelte';
 	import ResultsV2 from '$lib/components/ResultsV2.svelte';
-	import { get } from 'svelte/store';
 
 	let { data }: PageProps = $props();
 
@@ -96,6 +95,8 @@
 			chosenLetterPairData.pair.lastLetter
 		).toUpperCase();
 
+		const timestamp = MAX_SECONDS - secondsLeft;
+
 		switch (gameMode) {
 			case 'random':
 				if (chosenLetterPairData.words.includes(guess)) {
@@ -106,7 +107,7 @@
 
 					answers.push({
 						word: guess,
-						timestamp: MAX_SECONDS - secondsLeft
+						timestamp
 					});
 				} else {
 					middleLetters = '';
@@ -121,18 +122,18 @@
 
 					dailyAnswers.push({
 						word: guess,
-						timestamp: MAX_SECONDS - secondsLeft
+						timestamp
 					});
 
 					$todayAnswers =
 						$todayAnswers === 'none'
 							? `[${JSON.stringify({
 									word: guess,
-									timestamp: MAX_SECONDS - secondsLeft
+									timestamp
 								})}]`
 							: `[${$todayAnswers.replace('[', '').replace(']', '')},${JSON.stringify({
 									word: guess,
-									timestamp: MAX_SECONDS - secondsLeft
+									timestamp
 								})}]`;
 
 					$todaySecondsLeft = secondsLeft.toString();
@@ -149,7 +150,7 @@
 			const wordScore = answers.map((a) => a.word.length).reduce((acc, curr) => acc + curr, 0);
 			if (wordScore >= +$wordHighscore) {
 				$wordHighscore = wordScore.toString();
-				$timeHighscore = `${Math.floor(MAX_SECONDS - secondsLeft)}`;
+				$timeHighscore = `${Math.floor(timestamp)}`;
 			}
 		}
 
@@ -180,6 +181,7 @@
 		answers = [];
 		rerollCount = MAX_REROLL_COUNT;
 		randIdx = Math.floor(Math.random() * availableLetterPairsData.length);
+		middleLetters = '';
 		if (gameMode == 'daily') {
 			dailyIdx = 0;
 			$todayFinished = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
@@ -239,13 +241,6 @@
 		<div class="xs:justify-between mx-auto flex h-full max-w-xl flex-row justify-center">
 			<div class="xs:flex hidden flex-row content-center items-center justify-center gap-4">
 				<div class="w-[88px]"></div>
-				<!-- <div class={gameMode == 'daily' ? 'text-red' : ''}>
-					<Icon icon="mdi:calendar-question" width="36" height="36" />
-				</div>
-
-				<div class={gameMode == 'random' ? 'text-blue' : ''}>
-					<Icon icon="ri:dice-line" width="36" height="36" />
-				</div> -->
 			</div>
 			<button
 				onclick={() => {
@@ -338,13 +333,6 @@
 				<div
 					class="xs:gap-0 flex w-full flex-col items-center justify-center gap-4 border-b-4 border-black px-8 py-4"
 				>
-					<!-- <div class="xs:flex-row flex w-full flex-col justify-between">
-						<div>best <span class="text-red">daily</span> score</div>
-						<div>
-							<span class="text-red font-mono">{$wordHighscore}</span> in
-							<span class="text-blue font-mono">{convertSecondsToMinute(+$timeHighscore)}</span>
-						</div>
-					</div> -->
 					<div class="xs:flex-row xs:justify-between flex w-full flex-col text-left">
 						<span class="xs:self-center"> best score </span>
 						<span class="xs:self-center">
