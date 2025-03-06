@@ -7,6 +7,8 @@ type LetterPairData = {
 	words: string[];
 };
 
+export const prerender = true;
+
 const letterPairData = letterPairDataJson as LetterPairData[];
 
 const availableLetterPairData = letterPairData.filter((lpd) => lpd.count >= MINIMUM_WORD_COUNT);

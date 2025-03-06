@@ -51,6 +51,13 @@
 		(lpd) => lpd.count >= MINIMUM_WORD_COUNT
 	);
 
+	const today = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
+	if ($todayFinished < today) {
+		$todayFinished = 'none';
+		$todayAnswers = 'none';
+		$todaySecondsLeft = MAX_SECONDS.toString();
+	}
+
 	let gameMode = $state('random');
 
 	let randIdx = $state(Math.floor(Math.random() * availableLetterPairsData.length));
@@ -137,6 +144,10 @@
 								})}]`;
 
 					$todaySecondsLeft = secondsLeft.toString();
+
+					if ($todayAnswers !== 'none' && JSON.parse($todayAnswers).length >= GAME_WINNING_SCORE) {
+						$todayFinished = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
+					}
 				} else {
 					middleLetters = '';
 				}
@@ -217,9 +228,18 @@
 	};
 
 	let wordMilestoneIdx = $derived(
-		getMilestoneIdx(WORD_MILESTONES, getTotalLetterCount(answers.map((a) => a.word)))
+		getMilestoneIdx(
+			WORD_MILESTONES,
+			getTotalLetterCount(
+				gameMode === 'daily'
+					? JSON.parse($todayAnswers).map((a) => a.word)
+					: answers.map((a) => a.word)
+			)
+		)
 	);
-	let timeMilestoneIdx = $derived(getMilestoneIdx(TIME_MILESTONES, secondsLeft));
+	let timeMilestoneIdx = $derived(
+		getMilestoneIdx(TIME_MILESTONES, gameMode === 'daily' ? $todaySecondsLeft : secondsLeft)
+	);
 
 	let rerollCount = $state(MAX_REROLL_COUNT);
 
@@ -475,8 +495,8 @@
 			{handleResetGame}
 			{wordMilestoneIdx}
 			{timeMilestoneIdx}
-			answers={gameMode === 'daily' ? dailyAnswers : answers}
-			{secondsLeft}
+			answers={gameMode === 'daily' ? JSON.parse($todayAnswers) : answers}
+			secondsLeft={gameMode === 'daily' ? $todaySecondsLeft : secondsLeft}
 			bind:showToast
 			bind:isPlaying
 		/>
