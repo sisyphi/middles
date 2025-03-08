@@ -1,4 +1,4 @@
-export const MINIMUM_WORD_COUNT = 100;
+export const MINIMUM_WORD_COUNT = 400;
 export const MIN_TIME_DIFF = 500;
 export const MAX_SECONDS = 90;
 export const WORD_MILESTONES = [20, 30, 40, 50];
