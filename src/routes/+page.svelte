@@ -232,13 +232,13 @@
 			WORD_MILESTONES,
 			getTotalLetterCount(
 				gameMode === 'daily'
-					? JSON.parse($todayAnswers).map((a) => a.word)
+					? JSON.parse($todayAnswers).map((a: { word: string; timestamp: number[] }) => a.word)
 					: answers.map((a) => a.word)
 			)
 		)
 	);
 	let timeMilestoneIdx = $derived(
-		getMilestoneIdx(TIME_MILESTONES, gameMode === 'daily' ? $todaySecondsLeft : secondsLeft)
+		getMilestoneIdx(TIME_MILESTONES, gameMode === 'daily' ? +$todaySecondsLeft : secondsLeft)
 	);
 
 	let rerollCount = $state(MAX_REROLL_COUNT);
@@ -496,7 +496,7 @@
 			{wordMilestoneIdx}
 			{timeMilestoneIdx}
 			answers={gameMode === 'daily' ? JSON.parse($todayAnswers) : answers}
-			secondsLeft={gameMode === 'daily' ? $todaySecondsLeft : secondsLeft}
+			secondsLeft={gameMode === 'daily' ? +$todaySecondsLeft : secondsLeft}
 			bind:showToast
 			bind:isPlaying
 		/>
