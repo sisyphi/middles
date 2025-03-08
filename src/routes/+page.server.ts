@@ -59,13 +59,15 @@ const getLetterPairDataFromSequence = (
 };
 
 let today = new Date();
-today.setHours(0);
-today.setMinutes(0);
-today.setSeconds(0);
-today.setMilliseconds(0);
+let tomorrow = new Date(today);
+tomorrow.setDate(today.getDate() + 1);
+tomorrow.setHours(0);
+tomorrow.setMinutes(0);
+tomorrow.setSeconds(0);
+tomorrow.setMilliseconds(0);
 
 const todayLetterPairSequence = generateLetterPairSequence(
-	today,
+	tomorrow,
 	GAME_WINNING_SCORE + 1,
 	availableLetterPairData
 );

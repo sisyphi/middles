@@ -253,6 +253,13 @@
 	let showModal = $state(false);
 
 	let showDailyScoreBreakdown = $state(false);
+
+	let bgPosition: number = $state(0);
+	const xDir = Math.random() > 0.5 ? 1 : -1;
+	const yDir = Math.random() > 0.5 ? 1 : -1;
+	setInterval(() => {
+		bgPosition = Math.round(((bgPosition + 0.1) % 100) * 100) / 100;
+	}, 0.1);
 </script>
 
 <div class="bg-polka flex h-svh flex-col justify-between">
