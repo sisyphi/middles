@@ -1,5 +1,10 @@
 <script lang="ts">
-	import { MAX_SECONDS, MILESTONE_TITLES, TIME_MILESTONES, WORD_MILESTONES } from '$lib/constants';
+	import {
+		GAME_WINNING_SCORE,
+		MAX_SECONDS,
+		TIME_MILESTONES,
+		WORD_MILESTONES
+	} from '$lib/constants';
 	import Icon from '@iconify/svelte';
 	import { convertSecondsToMinute } from '$lib/utils';
 	import { format } from 'date-fns-tz';
@@ -44,6 +49,7 @@
 		secondsLeft: number;
 		showToast: boolean;
 		isPlaying: boolean;
+		isFilming: boolean;
 	} = $props();
 
 	let showScoreBreakdown = $state(false);
@@ -55,7 +61,7 @@
 		props.handleResetGame();
 		showScoreBreakdown = false;
 	}}
-	class="xs:max-w-lg xs:border-r-4 xs:border-l-4 mx-auto mt-32 flex w-full flex-1 flex-col overflow-scroll border-t-4 border-black bg-white font-sans text-2xl font-bold text-black"
+	class={`mx-auto flex w-full flex-col overflow-scroll border-t-4 border-black bg-white font-sans text-2xl font-bold text-black ${props.isFilming ? 'mt-16 h-[20.5rem] justify-between' : 'xs:max-w-lg xs:border-r-4 xs:border-l-4 mt-32 flex-1'}`}
 >
 	<div
 		class="xs:px-8 xs:py-4 sticky top-0 flex h-fit w-full flex-row justify-between border-b-4 border-black bg-white px-4 py-2 text-center"
@@ -74,80 +80,59 @@
 			</div>
 		{/each}
 	</div>
-	<div class="xs:px-8 xs:py-4 flex flex-col gap-4 border-b-4 border-black p-4">
-		<div class="flex w-full flex-row justify-between text-2xl">
-			<div>WORD SCORE</div>
-			<div class="text-red font-mono">
-				{MILESTONE_TITLES[props.wordMilestoneIdx]}
-			</div>
-		</div>
-		<div class="flex w-full flex-row justify-between text-2xl">
-			<div>TIME SCORE</div>
-			<div class="text-blue font-mono">
-				{MILESTONE_TITLES[props.timeMilestoneIdx]}
-			</div>
-		</div>
-	</div>
 
 	<div class="xs:px-8 xs:py-4 flex w-full flex-col border-b-4 border-black p-4">
-		<button
-			disabled={props.answers.length == 0}
-			class={`w-full ${props.answers.length > 0 ? 'hover:cursor-pointer' : ''}`}
-			onclick={(e) => {
-				e.preventDefault();
-				showScoreBreakdown = !showScoreBreakdown;
-			}}
-		>
-			<div class="flex w-full flex-row justify-between">
-				<span>EXTRA STATS</span>
-				<span class="flex flex-row items-center gap-4">
-					{#if props.answers.length > 0}
-						{#if !showScoreBreakdown}
-							<Icon icon="oi:chevron-bottom" width="16" height="16" />
-						{:else}
-							<Icon icon="oi:chevron-top" width="16" height="16" />
-						{/if}
-					{/if}
-				</span>
-			</div>
-		</button>
-		{#if showScoreBreakdown}
-			<div class="flex flex-col justify-between text-lg">
-				{#each props.answers as answer, idx}
+		<div class="flex flex-col justify-between text-lg">
+			{#each { length: GAME_WINNING_SCORE } as _, idx}
+				{#if idx < props.answers.length}
 					<div
 						class={`flex w-full flex-row justify-between ${
-							idx == props.answers.length - 1 ? 'mb-2 border-b-4 border-black pb-2' : ''
-						} ${idx == 0 ? 'mt-4' : ''}`}
+							idx == GAME_WINNING_SCORE - 1 ? 'mb-2 border-b-4 border-black pb-2' : ''
+						}`}
 					>
-						<div>{answer.word}</div>
+						<div>{props.answers[idx].word}</div>
 						<div class="flex flex-row justify-between gap-4 font-mono">
 							<span class="text-red">
-								{String(answer.word.length.toString()).padStart(2, '0')}
+								{String(props.answers[idx].word.length.toString()).padStart(2, '0')}
 							</span>
 							<span class="text-blue">
 								+{convertSecondsToMinute(
-									answer.timestamp - (idx == 0 ? 0 : props.answers[idx - 1].timestamp)
+									props.answers[idx].timestamp - (idx == 0 ? 0 : props.answers[idx - 1].timestamp)
 								)}
 							</span>
 						</div>
 					</div>
-				{/each}
+				{:else}
+					<div
+						class={`flex w-full flex-row justify-between ${
+							idx == GAME_WINNING_SCORE - 1 ? 'mb-2 border-b-4 border-black pb-2' : ''
+						}`}
+					>
+						<div>--</div>
+						<div class="flex flex-row justify-between gap-4 font-mono">
+							<span class="text-red">00</span>
+							<span class="text-blue whitespace-pre-line">&nbsp;--:--</span>
+						</div>
+					</div>
+				{/if}
+			{/each}
+		</div>
+		<div class="flex flex-row justify-between text-2xl">
+			<div>FINAL SCORE</div>
+			<div class="flex flex-row justify-between gap-4 font-mono">
+				<span class="text-red">
+					{props.answers
+						.map((a) => a.word.length)
+						.reduce((acc, curr) => acc + curr, 0)
+						.toString()
+						.padStart(2, '0')}
+				</span>
+				<span class="text-blue">
+					{convertSecondsToMinute(MAX_SECONDS - props.secondsLeft)}
+				</span>
 			</div>
-			<div class="flex flex-row justify-between text-2xl">
-				<div>FINAL SCORE</div>
-				<div class="flex flex-row justify-between gap-4 font-mono">
-					<span class="text-red">
-						{props.answers
-							.map((a) => a.word.length)
-							.reduce((acc, curr) => acc + curr, 0)
-							.toString()
-							.padStart(2, '0')}
-					</span>
-					<span class="text-blue">
-						{convertSecondsToMinute(MAX_SECONDS - props.secondsLeft)}
-					</span>
-				</div>
-			</div>
+		</div>
+		{#if !props.isFilming}
 			<div class="mt-4 grid overflow-clip border-4 border-black text-white">
 				<div
 					class={`bg-blue border-red col-start-1 row-start-1 h-8 border-r-4`}
@@ -172,41 +157,43 @@
 			<div class="text-xs text-black">* each tick represents 5 seconds</div>
 		{/if}
 	</div>
-	<div class="flex w-full flex-row">
-		<button
-			class="w-1/2 border-r-2 border-b-4 border-black p-2 hover:cursor-pointer hover:bg-black hover:text-white"
-			onclick={(e) => {
-				e.preventDefault();
-				navigator.clipboard.writeText(
-					createShareText(
-						props.wordMilestoneIdx,
-						props.timeMilestoneIdx,
-						props.answers,
-						props.secondsLeft
-					)
-				);
-				showToast = true;
-			}}>share!</button
-		>
-		<button
-			type="submit"
-			class="w-1/2 border-b-4 border-l-2 border-black p-2 hover:cursor-pointer hover:bg-black hover:text-white"
-			>play again?</button
-		>
-	</div>
-	<div class="flex w-full flex-row">
-		<button
-			onclick={() => {
-				props.handleResetGame();
-				showScoreBreakdown = false;
+	{#if !props.isFilming}
+		<div class="flex w-full flex-row">
+			<button
+				class="w-1/2 border-r-2 border-b-4 border-black p-2 hover:cursor-pointer hover:bg-black hover:text-white"
+				onclick={(e) => {
+					e.preventDefault();
+					navigator.clipboard.writeText(
+						createShareText(
+							props.wordMilestoneIdx,
+							props.timeMilestoneIdx,
+							props.answers,
+							props.secondsLeft
+						)
+					);
+					showToast = true;
+				}}>share!</button
+			>
+			<button
+				type="submit"
+				class="w-1/2 border-b-4 border-l-2 border-black p-2 hover:cursor-pointer hover:bg-black hover:text-white"
+				>play again?</button
+			>
+		</div>
+		<div class="flex w-full flex-row">
+			<button
+				onclick={() => {
+					props.handleResetGame();
+					showScoreBreakdown = false;
 
-				isPlaying = false;
-			}}
-			class="w-full border-b-4 border-black p-2 hover:cursor-pointer hover:bg-black hover:text-white"
-		>
-			go home
-		</button>
-	</div>
+					isPlaying = false;
+				}}
+				class="w-full border-b-4 border-black p-2 hover:cursor-pointer hover:bg-black hover:text-white"
+			>
+				go home
+			</button>
+		</div>
 
-	<Countdown />
+		<Countdown />
+	{/if}
 </form>

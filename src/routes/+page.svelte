@@ -260,11 +260,15 @@
 	setInterval(() => {
 		bgPosition = Math.round(((bgPosition + 0.1) % 100) * 100) / 100;
 	}, 0.1);
+
+	let isFilming = $state(false);
 </script>
 
-<div class="bg-polka flex h-svh flex-col justify-between">
+<div class={`bg-polka flex h-svh flex-col ${isFilming ? 'justify-start' : 'justify-between'}`}>
 	<!-- style="background-position: {`${bgPosition * xDir}px ${bgPosition * yDir}px`};" -->
-	<div class="h-16 w-full border-b-4 border-black bg-white px-4">
+	<div
+		class={`w-full border-b-4 border-black bg-white px-4 ${isFilming ? 'mt-8 h-24 border-t-4' : 'h-16'}`}
+	>
 		<div class="xs:justify-between mx-auto flex h-full max-w-xl flex-row justify-center">
 			<div class="xs:flex hidden flex-row content-center items-center justify-center gap-4">
 				<div class="w-[88px]"></div>
@@ -274,219 +278,248 @@
 					handleResetGame();
 					isPlaying = false;
 				}}
-				class="flex flex-row content-center items-center justify-center font-mono text-4xl font-bold hover:cursor-pointer"
+				class={`flex flex-row content-center items-center justify-center font-mono font-bold hover:cursor-pointer ${isFilming ? 'text-5xl' : 'text-4xl'}`}
 			>
-				<span class="text-red text-5xl">M</span>IDDLE<span class="text-blue text-5xl">S</span>
+				<span class={`text-red ${isFilming ? 'text-6xl' : 'text-5xl'}`}>M</span>IDDLE<span
+					class={`text-blue ${isFilming ? 'text-6xl' : 'text-5xl'}`}>S</span
+				>
 			</button>
 			<div class="xs:flex hidden flex-row content-center items-center justify-center gap-4">
-				<button
-					onclick={() => {
-						showModal = true;
-					}}
-					class="hover:text-red ml-[52px] hover:cursor-pointer"
-				>
-					<Icon icon="ri:information-2-fill" width="36" height="36" />
-				</button>
+				{#if !isFilming}
+					<button
+						onclick={() => {
+							showModal = true;
+						}}
+						class="hover:text-red ml-[52px] hover:cursor-pointer"
+					>
+						<Icon icon="ri:information-2-fill" width="36" height="36" />
+					</button>
+				{:else}
+					<div class="w-[88px]"></div>
+				{/if}
 			</div>
 		</div>
 	</div>
 	{#if !isPlaying}
-		<div
-			class="xs:max-w-lg xs:border-r-4 xs:border-l-4 mx-auto mt-32 flex w-full flex-1 flex-col items-center justify-between border-t-4 border-black bg-white font-sans text-2xl font-bold text-black"
-		>
-			<div class="w-full">
-				<div class="xs:flex-row flex w-full flex-col">
-					<div class={`xs:border-r-4 xs:w-1/2 flex w-full flex-row border-b-4 border-black`}>
-						<button
-							onclick={() => {
-								gameMode = 'daily';
-								isPlaying = true;
-							}}
-							disabled={isDailyFinished()}
-							class={`flex w-full flex-row gap-2 border-black px-8 py-4 text-left ${isDailyFinished() ? 'hover:cursor-not-allowed' : 'hover:bg-red hover:cursor-pointer hover:**:text-white'}`}
-						>
-							{#if isDailyFinished()}
-								<Icon
-									class="xs:order-1 order-2 self-center"
-									icon="icomoon-free:checkmark"
-									width="36"
-									height="36"
-								/>
-							{:else}
-								<Icon
-									class="xs:order-1 order-2 self-center"
-									icon="mdi:calendar-question"
-									width="36"
-									height="36"
-								/>
-							{/if}
-							<span class="xs:order-2 order-1 self-center">
+		{#if !isFilming}
+			<!-- content here -->
+			<div
+				class="xs:max-w-lg xs:border-r-4 xs:border-l-4 mx-auto mt-32 flex w-full flex-1 flex-col items-center justify-between border-t-4 border-black bg-white font-sans text-2xl font-bold text-black"
+			>
+				<div class="w-full">
+					<div class="xs:flex-row flex w-full flex-col">
+						<div class={`xs:border-r-4 xs:w-1/2 flex w-full flex-row border-b-4 border-black`}>
+							<button
+								onclick={() => {
+									gameMode = 'daily';
+									isPlaying = true;
+								}}
+								disabled={isDailyFinished()}
+								class={`flex w-full flex-row gap-2 border-black px-8 py-4 text-left ${isDailyFinished() ? 'hover:cursor-not-allowed' : 'hover:bg-red hover:cursor-pointer hover:**:text-white'}`}
+							>
 								{#if isDailyFinished()}
-									<span class="text-red">daily</span> done
+									<Icon
+										class="xs:order-1 order-2 self-center"
+										icon="icomoon-free:checkmark"
+										width="36"
+										height="36"
+									/>
 								{:else}
-									<span class="text-red">daily</span> play
+									<Icon
+										class="xs:order-1 order-2 self-center"
+										icon="mdi:calendar-question"
+										width="36"
+										height="36"
+									/>
 								{/if}
-							</span>
-						</button>
-					</div>
-					<div class="xs:w-1/2 flex w-full flex-row border-b-4 border-black">
-						<button
-							onclick={() => {
-								gameMode = 'random';
-								isPlaying = true;
-							}}
-							disabled={gameMode == 'daily' && isDailyFinished()}
-							class="hover:bg-blue flex w-full flex-row gap-2 border-black px-8 py-4 text-left hover:cursor-pointer hover:**:text-white"
-						>
-							<Icon
-								class="xs:order-1 order-2 self-center"
-								icon="ri:dice-line"
-								width="36"
-								height="36"
-							/>
-							<span class="xs:order-2 order-1 self-center">
-								<span class="text-blue">random</span> play
-							</span>
-						</button>
-					</div>
-				</div>
-				<button
-					onclick={() => {
-						showModal = true;
-					}}
-					class="w-full border-b-4 border-black px-8 py-4 text-left hover:cursor-pointer hover:bg-black hover:text-white"
-					>how to play?</button
-				>
-				<div
-					class="xs:gap-0 flex w-full flex-col items-center justify-center gap-4 border-b-4 border-black px-8 py-4"
-				>
-					<div class="xs:flex-row xs:justify-between flex w-full flex-col text-left">
-						<span class="xs:self-center"> best score </span>
-						<span class="xs:self-center">
-							<span class="text-red font-mono">{$wordHighscore}</span>
-							in
-							<span class="text-blue font-mono">{convertSecondsToMinute(+$timeHighscore)}</span>
-						</span>
-					</div>
-				</div>
-				{#if isDailyFinished()}
-					<div class="xs:px-8 xs:py-4 flex w-full flex-col border-b-4 border-black px-8 py-4">
-						<button
-							disabled={$todayAnswers === 'none'}
-							class={`w-full ${$todayAnswers !== 'none' ? 'hover:cursor-pointer' : ''}`}
-							onclick={(e) => {
-								e.preventDefault();
-								showDailyScoreBreakdown = !showDailyScoreBreakdown;
-							}}
-						>
-							<div class="flex w-full flex-row justify-between">
-								<span><span class="text-red">daily</span> stats</span>
-								<span class="flex flex-row items-center gap-2">
-									{#if $todayAnswers !== 'none'}
-										{#if !showDailyScoreBreakdown}
-											<Icon icon="oi:chevron-bottom" width="16" height="16" />
-										{:else}
-											<Icon icon="oi:chevron-top" width="16" height="16" />
-										{/if}
+								<span class="xs:order-2 order-1 self-center">
+									{#if isDailyFinished()}
+										<span class="text-red">daily</span> done
+									{:else}
+										<span class="text-red">daily</span> play
 									{/if}
 								</span>
-							</div>
-						</button>
-						{#if showDailyScoreBreakdown}
-							<div class="flex flex-col justify-between text-lg">
-								{#each JSON.parse($todayAnswers) as answer, idx}
-									<div
-										class={`flex w-full flex-row justify-between ${
-											idx == JSON.parse($todayAnswers).length - 1
-												? 'mb-2 border-b-4 border-black pb-2'
-												: ''
-										} ${idx == 0 ? 'mt-4' : ''}`}
-									>
-										<div>{answer.word}</div>
-										<div class="flex flex-row justify-between gap-4 font-mono">
-											<span class="text-red">
-												{String(answer.word.length.toString()).padStart(2, '0')}
-											</span>
-											<span class="text-blue">
-												+{convertSecondsToMinute(
-													answer.timestamp -
-														(idx == 0 ? 0 : JSON.parse($todayAnswers)[idx - 1].timestamp)
-												)}
-											</span>
-										</div>
-									</div>
-								{/each}
-							</div>
-							<div class="flex flex-row justify-between text-2xl">
-								<div>FINAL SCORE</div>
-								<div class="flex flex-row justify-between gap-4 font-mono">
-									<span class="text-red">
-										{JSON.parse($todayAnswers)
-											.map((a: { word: string; timestamp: number }) => a.word.length)
-											.reduce((acc: number, curr: number) => acc + curr, 0)
-											.toString()
-											.padStart(2, '0')}
-									</span>
-									<span class="text-blue">
-										{convertSecondsToMinute(MAX_SECONDS - +$todaySecondsLeft)}
+							</button>
+						</div>
+						<div class="xs:w-1/2 flex w-full flex-row border-b-4 border-black">
+							<button
+								onclick={() => {
+									gameMode = 'random';
+									isPlaying = true;
+								}}
+								disabled={gameMode == 'daily' && isDailyFinished()}
+								class="hover:bg-blue flex w-full flex-row gap-2 border-black px-8 py-4 text-left hover:cursor-pointer hover:**:text-white"
+							>
+								<Icon
+									class="xs:order-1 order-2 self-center"
+									icon="ri:dice-line"
+									width="36"
+									height="36"
+								/>
+								<span class="xs:order-2 order-1 self-center">
+									<span class="text-blue">random</span> play
+								</span>
+							</button>
+						</div>
+					</div>
+					<button
+						onclick={() => {
+							showModal = true;
+						}}
+						class="w-full border-b-4 border-black px-8 py-4 text-left hover:cursor-pointer hover:bg-black hover:text-white"
+						>how to play?</button
+					>
+					<div
+						class="xs:gap-0 flex w-full flex-col items-center justify-center gap-4 border-b-4 border-black px-8 py-4"
+					>
+						<div class="xs:flex-row xs:justify-between flex w-full flex-col text-left">
+							<span class="xs:self-center"> best score </span>
+							<span class="xs:self-center">
+								<span class="text-red font-mono">{$wordHighscore}</span>
+								in
+								<span class="text-blue font-mono">{convertSecondsToMinute(+$timeHighscore)}</span>
+							</span>
+						</div>
+					</div>
+					{#if isDailyFinished()}
+						<div class="xs:px-8 xs:py-4 flex w-full flex-col border-b-4 border-black px-8 py-4">
+							<button
+								disabled={$todayAnswers === 'none'}
+								class={`w-full ${$todayAnswers !== 'none' ? 'hover:cursor-pointer' : ''}`}
+								onclick={(e) => {
+									e.preventDefault();
+									showDailyScoreBreakdown = !showDailyScoreBreakdown;
+								}}
+							>
+								<div class="flex w-full flex-row justify-between">
+									<span><span class="text-red">daily</span> stats</span>
+									<span class="flex flex-row items-center gap-2">
+										{#if $todayAnswers !== 'none'}
+											{#if !showDailyScoreBreakdown}
+												<Icon icon="oi:chevron-bottom" width="16" height="16" />
+											{:else}
+												<Icon icon="oi:chevron-top" width="16" height="16" />
+											{/if}
+										{/if}
 									</span>
 								</div>
-							</div>
-							<div class="mt-4 grid overflow-clip border-4 border-black text-white">
-								<div
-									class={`bg-blue border-red col-start-1 row-start-1 h-8 border-r-4`}
-									style={`width: ${((MAX_SECONDS - +$todaySecondsLeft) / MAX_SECONDS) * 100 + 0.5}%`}
-								></div>
-
-								{#each JSON.parse($todayAnswers) as answer}
-									<div
-										class="border-red col-start-1 row-start-1 h-full border-r-4"
-										style={`width:  ${(answer.timestamp / MAX_SECONDS) * 100 + 0.5}%;`}
-									></div>
-								{/each}
-								{#each { length: MAX_SECONDS / 5 + 1 }, idx}
-									{#if idx != 0 && idx != MAX_SECONDS / 5}
+							</button>
+							{#if showDailyScoreBreakdown}
+								<div class="flex flex-col justify-between text-lg">
+									{#each JSON.parse($todayAnswers) as answer, idx}
 										<div
-											class={`col-start-1 row-start-1 -mt-0.5 border-r-4 border-black ${idx % 2 == 0 ? 'h-4' : 'h-2'}`}
-											style={`width: ${(idx / (MAX_SECONDS / 5)) * 100 + 0.5}%`}
+											class={`flex w-full flex-row justify-between ${
+												idx == JSON.parse($todayAnswers).length - 1
+													? 'mb-2 border-b-4 border-black pb-2'
+													: ''
+											} ${idx == 0 ? 'mt-4' : ''}`}
+										>
+											<div>{answer.word}</div>
+											<div class="flex flex-row justify-between gap-4 font-mono">
+												<span class="text-red">
+													{String(answer.word.length.toString()).padStart(2, '0')}
+												</span>
+												<span class="text-blue">
+													+{convertSecondsToMinute(
+														answer.timestamp -
+															(idx == 0 ? 0 : JSON.parse($todayAnswers)[idx - 1].timestamp)
+													)}
+												</span>
+											</div>
+										</div>
+									{/each}
+								</div>
+								<div class="flex flex-row justify-between text-2xl">
+									<div>FINAL SCORE</div>
+									<div class="flex flex-row justify-between gap-4 font-mono">
+										<span class="text-red">
+											{JSON.parse($todayAnswers)
+												.map((a: { word: string; timestamp: number }) => a.word.length)
+												.reduce((acc: number, curr: number) => acc + curr, 0)
+												.toString()
+												.padStart(2, '0')}
+										</span>
+										<span class="text-blue">
+											{convertSecondsToMinute(MAX_SECONDS - +$todaySecondsLeft)}
+										</span>
+									</div>
+								</div>
+								<div class="mt-4 grid overflow-clip border-4 border-black text-white">
+									<div
+										class={`bg-blue border-red col-start-1 row-start-1 h-8 border-r-4`}
+										style={`width: ${((MAX_SECONDS - +$todaySecondsLeft) / MAX_SECONDS) * 100 + 0.5}%`}
+									></div>
+
+									{#each JSON.parse($todayAnswers) as answer}
+										<div
+											class="border-red col-start-1 row-start-1 h-full border-r-4"
+											style={`width:  ${(answer.timestamp / MAX_SECONDS) * 100 + 0.5}%;`}
 										></div>
-									{/if}
-								{/each}
-							</div>
-							<div class="text-xs text-black">* each tick represents 5 seconds</div>
-						{/if}
+									{/each}
+									{#each { length: MAX_SECONDS / 5 + 1 }, idx}
+										{#if idx != 0 && idx != MAX_SECONDS / 5}
+											<div
+												class={`col-start-1 row-start-1 -mt-0.5 border-r-4 border-black ${idx % 2 == 0 ? 'h-4' : 'h-2'}`}
+												style={`width: ${(idx / (MAX_SECONDS / 5)) * 100 + 0.5}%`}
+											></div>
+										{/if}
+									{/each}
+								</div>
+								<div class="text-xs text-black">* each tick represents 5 seconds</div>
+							{/if}
+						</div>
+					{/if}
+					<div
+						class="flex w-full flex-col justify-center border-black px-8 py-4 text-center text-lg leading-6"
+					>
+						{`${format(new Date(), 'MMM dd, yyyy')} - Sequence #${dayDiff}`}
+						<br />
+						<span class="text-base">{`by sisyphi`}</span>
 					</div>
-				{/if}
-				<div
-					class="flex w-full flex-col justify-center border-black px-8 py-4 text-center text-lg leading-6"
+				</div>
+				<!-- <div
+					class="bg-diagonal-large flex w-full flex-row justify-center border-t-4 border-b-4 border-black px-4 py-8"
 				>
-					{`${format(new Date(), 'MMM dd, yyyy')} - Sequence #${dayDiff}`}
-					<br />
-					<span class="text-base">{`by sisyphi`}</span>
-				</div>
-			</div>
-			<!-- <div
-				class="bg-diagonal-large flex w-full flex-row justify-center border-t-4 border-b-4 border-black px-4 py-8"
-			>
-				<div class="flex flex-row gap-4 border-4 bg-white px-8 py-4 text-lg leading-6 text-black">
-					<Icon class="self-center" icon="lucide:construction" width="52" height="52" />
-					<div class="flex flex-col justify-center text-center">
-						stats under<br />construction
+					<div class="flex flex-row gap-4 border-4 bg-white px-8 py-4 text-lg leading-6 text-black">
+						<Icon class="self-center" icon="lucide:construction" width="52" height="52" />
+						<div class="flex flex-col justify-center text-center">
+							stats under<br />construction
+						</div>
+						<Icon class="self-center" icon="lucide:construction" width="52" height="52" />
 					</div>
-					<Icon class="self-center" icon="lucide:construction" width="52" height="52" />
-				</div>
-			</div> -->
-		</div>
+				</div> -->
+			</div>
+		{:else}
+			<div
+				class="mx-auto mt-16 flex h-[20.5rem] w-full flex-col content-center items-center justify-between border-y-4 border-black bg-white font-sans text-2xl font-bold text-black"
+			>
+				<div
+					class="flex w-full flex-1 flex-col justify-center border-b-4 border-black text-center text-4xl leading-12"
+				></div>
+				<button
+					onclick={() => {
+						gameMode = 'random';
+						isPlaying = true;
+					}}
+					disabled={gameMode == 'daily' && isDailyFinished()}
+					class="hover:bg-blue flex w-full flex-row justify-center gap-2 border-black px-8 py-4 text-left text-4xl hover:cursor-pointer hover:text-white"
+				>
+					play
+				</button>
+			</div>
+		{/if}
 	{:else if !isGameWon && !isGameLost}
 		<Game
 			{handleSubmit}
 			{score}
 			{secondsLeft}
 			{chosenLetterPairData}
+			answers={gameMode === 'daily' ? JSON.parse($todayAnswers) : answers}
 			bind:middleLettersInputRef
 			bind:middleLetters
 			{rerollCount}
 			{handleReroll}
+			{isFilming}
 		/>
 	{:else}
 		<!-- <Results
@@ -506,6 +539,7 @@
 			secondsLeft={gameMode === 'daily' ? +$todaySecondsLeft : secondsLeft}
 			bind:showToast
 			bind:isPlaying
+			{isFilming}
 		/>
 	{/if}
 	<div class="absolute right-10 bottom-10 hidden size-16 bg-[#ea5e82] md:block">
