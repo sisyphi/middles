@@ -18,10 +18,8 @@ const generateLetterPairSequence = (
 	sequenceLength: number,
 	letterPairData: LetterPairData[]
 ) => {
-	// const year = date.getFullYear();
-	// const month = date.getMonth();
 	const dayOfMonth = date.getDate();
-	const dayOfWeek = date.getDay();
+	const dayOfWeek = date.getDay() + 1;
 
 	let timeDiff = date.getTime() - ORIGIN_DATE.getTime();
 
@@ -60,7 +58,7 @@ const getLetterPairDataFromSequence = (
 
 let today = new Date();
 let tomorrow = new Date(today);
-tomorrow.setDate(today.getDate() + 1);
+tomorrow.setDate(today.getDate());
 tomorrow.setHours(0);
 tomorrow.setMinutes(0);
 tomorrow.setSeconds(0);
