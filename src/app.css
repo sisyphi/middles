@@ -1,10 +1,3 @@
-@import 'tailwindcss';
+@import 'imbento-box-ui/tailwind-config.css';
 
-@theme {
-	--color-black: #10141f;
-	--color-white: #ebede9;
-	--color-blue: #4f8fba;
-	--color-red: #cf573c;
-	--color-pink: #ea5e82;
-	--breakpoint-xs: 32rem;
-}
+@source '../node_modules/imbento-box-ui/**/*.{svelte,js}';
